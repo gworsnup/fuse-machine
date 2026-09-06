@@ -1384,6 +1384,190 @@
   .cashRequirement { grid-column: 1 / -1; }
 }
 
+/* Compact installed-app layout for phones held sideways. The machine and its
+   essential controls fit into one short viewport; secondary panels scroll. */
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  .page {
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(5px, env(safe-area-inset-top))
+      max(8px, env(safe-area-inset-right))
+      max(10px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+  }
+
+  .game { width: min(100%, 1040px); }
+
+  .header {
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 5px;
+  }
+
+  .header .eyebrow { display: none; }
+  .header h1 { margin: 0; font-size: 1.65rem; line-height: 1; }
+
+  .wallet {
+    display: flex;
+    min-width: 0;
+    min-height: 38px;
+    align-items: center;
+    gap: 7px;
+    margin-left: auto;
+    padding: 5px 9px;
+    border-radius: 10px;
+  }
+
+  .wallet span { display: none; }
+  .wallet strong { margin: 0; font-size: 0.9rem; }
+  .wallet small { font-size: 0.58rem; }
+
+  .soundButton,
+  .menuButton {
+    display: flex;
+    min-width: 58px;
+    min-height: 38px;
+    gap: 4px;
+    padding: 4px 7px;
+    border-radius: 10px;
+    font-size: 0.48rem;
+  }
+
+  .soundButton span,
+  .menuButton span { font-size: 0.85rem; }
+
+  .liveBar {
+    grid-template-columns: 1.25fr 1fr auto auto;
+    gap: 4px;
+    margin-bottom: 5px;
+  }
+
+  .eventChip,
+  .pityMeter,
+  .dailyButton,
+  .indexButton {
+    min-height: 34px;
+    padding: 4px 7px;
+    border-radius: 8px;
+  }
+
+  .eventChip span,
+  .pityMeter span,
+  .dailyButton,
+  .indexButton { font-size: 0.52rem; }
+
+  .eventChip small,
+  .pityMeter small,
+  .dailyButton small,
+  .indexButton small { display: none; }
+
+  .eventChip:has(> button) { padding-right: 72px; }
+  .eventChip > button { right: 4px; padding: 5px; font-size: 0.42rem; }
+  .pityMeter i { margin-top: 4px; }
+  .dailyButton,
+  .indexButton { min-width: 72px; }
+
+  .landscapeGrid {
+    grid-template-columns: minmax(0, 1.8fr) minmax(225px, 0.75fr);
+    gap: 7px;
+  }
+
+  .machineShell { border-radius: 14px; }
+  .machineTop { min-height: 25px; padding: 0 9px; font-size: 0.52rem; }
+
+  .screen {
+    min-height: 222px;
+    padding: 6px 9px;
+  }
+
+  .reelWindow { height: 128px; border-radius: 10px; }
+  .reelTrack { top: 5px; }
+  .reelCard {
+    height: 118px;
+    grid-template-rows: 82px 12px 14px;
+    padding: 4px 7px 5px;
+    border-radius: 9px;
+  }
+  .reelCard img,
+  .cloverArtwork { height: 82px; }
+  .cloverArtwork { transform: scale(0.72); }
+  .centreMarker { border-radius: 9px; }
+
+  .rollReveal { gap: 12px; padding: 5px 16px; }
+  .rollReveal strong { margin-top: 2px; font-size: 1.35rem; }
+  .rollReveal small { margin-top: 4px; font-size: 0.5rem; }
+  .rollReveal img { width: min(37%, 112px); height: 112px; }
+  .oddsBadge { margin-top: 5px; padding: 4px 6px; font-size: 0.56rem; }
+
+  .resultIdentity { min-height: 55px; }
+  .rarity { margin: 5px 0 1px; font-size: 0.5rem; }
+  .screen h2 { font-size: 1.2rem; }
+  .description {
+    overflow: hidden;
+    max-width: 95%;
+    min-height: 0;
+    margin: 2px 0 5px;
+    font-size: 0.58rem;
+    line-height: 1.15;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .luckTrack { gap: 3px; }
+  .luckTrack span { min-width: 27px; padding: 4px 5px; border-radius: 5px; font-size: 0.52rem; }
+
+  .machineControls { padding: 6px; }
+  .rollButton { min-height: 43px; border-radius: 10px; box-shadow: 0 4px 0 #4b2e8c; }
+  .rollButton span { font-size: 0.92rem; }
+  .rollButton small { margin-top: -12px; font-size: 0.6rem; }
+  .resultActions { gap: 5px; }
+  .resultActions > div { padding: 0 5px; }
+  .resultActions > div span { font-size: 0.48rem; }
+  .resultActions > div strong { font-size: 0.65rem; }
+  .resultActions > div small { margin-top: 1px; font-size: 0.45rem; }
+  .collectButton,
+  .discardButton { min-height: 43px; border-radius: 8px; font-size: 0.65rem; }
+
+  .collection {
+    max-height: 301px;
+    padding: 8px;
+    border-radius: 14px;
+  }
+  .collectionHeading { margin-bottom: 5px; }
+  .collectionHeading .eyebrow { display: none; }
+  .collectionHeading h2 { margin: 0; font-size: 1rem; }
+  .collectionHeading > span { font-size: 0.55rem; }
+  .collectionGrid { gap: 5px; }
+  .collectionCard { grid-template-columns: 34px 1fr auto; gap: 6px; padding: 5px; border-radius: 8px; }
+  .miniOrb { width: 34px; height: 34px; border-radius: 7px; }
+  .collectionCard h3 { font-size: 0.65rem; }
+  .collectionCard p { margin-top: 1px; font-size: 0.5rem; }
+  .collectionActions { gap: 2px; }
+  .collectionActions strong { font-size: 0.6rem; }
+  .collectionActions button { padding: 3px 5px; font-size: 0.45rem; }
+
+  .emptyCollection { min-height: 80px; padding: 10px; }
+  .upgradeTree { gap: 5px; margin-top: 9px; padding-top: 8px; }
+  .upgradeTitle h3 { font-size: 0.75rem; }
+  .upgradeBranch { gap: 3px 6px; padding: 6px; border-radius: 8px; }
+  .upgradeBranch > div:first-child strong { font-size: 0.58rem; }
+  .upgradeBranch > div:first-child span { font-size: 0.46rem; }
+  .upgradeBranch button { min-width: 74px; font-size: 0.48rem; }
+
+  .progressionHub { gap: 7px; margin-top: 8px; }
+  .hubCard { padding: 9px; border-radius: 12px; }
+
+  .introScreen { padding: max(6px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); }
+  .introCard { width: min(100%, 700px); padding: 10px 18px; border-radius: 18px; }
+  .introEyebrow { margin-bottom: 3px; font-size: 0.52rem; }
+  .introTitle { font-size: clamp(2.2rem, 10vh, 3.2rem); }
+  .introTagline { margin: 5px 0 7px; font-size: 0.66rem; }
+  .rebirthSummary { margin-bottom: 7px; padding: 5px 8px; }
+  .introButtons { gap: 6px; }
+  .introButtons button { min-height: 44px; padding: 6px 8px; }
+}
+
 @media (orientation: portrait) and (max-width: 900px) and (pointer: coarse) {
   .rotatePrompt {
     position: fixed;
