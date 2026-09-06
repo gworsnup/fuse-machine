@@ -31,6 +31,7 @@ type Mutation = "normal" | "gold" | "diamond" | "rainbow";
 type OwnedOddling = Oddling & { count: number; mutation: Mutation };
 type RolledOddling = Oddling & { mutation: Mutation; oddsOneIn: number };
 type UpgradeBranch = "luck" | "speed" | "mutation";
+type GameTab = "roll" | "collection" | "upgrades" | "shop" | "fuse" | "more";
 type Upgrades = Record<UpgradeBranch, number>;
 type PotionKind = "luck" | "mutation" | "turbo" | "double";
 type SpecialEvent = "meteor" | "glitch" | "golden" | "double" | null;
@@ -72,6 +73,14 @@ const MAX_UPGRADE_LEVEL = 5;
 const LUCK_LEVELS = [1, 2, 4, 6, 8, 10, 20] as const;
 const MUTATIONS: Mutation[] = ["normal", "gold", "diamond", "rainbow"];
 const PITY_MAX = 40;
+const GAME_TABS: readonly [GameTab, string, string][] = [
+  ["roll", "🎰", "Roll"],
+  ["collection", "🃏", "Collection"],
+  ["upgrades", "⬆", "Upgrades"],
+  ["shop", "🧪", "Potions"],
+  ["fuse", "🧬", "Fuse"],
+  ["more", "⭐", "More"],
+];
 
 const potionShop: Record<PotionKind, { name: string; price: number; detail: string }> = {
   luck: { name: "Lucky Fizz", price: 250_000, detail: "+5% luck · 5 rolls" },
@@ -616,6 +625,7 @@ function CloverArtwork({ token }: { token: LuckToken }) {
 
 export default function RngMachine() {
   const [gameStarted, setGameStarted] = useState(false);
+  const [activeTab, setActiveTab] = useState<GameTab>("roll");
   const [showRebirth, setShowRebirth] = useState(false);
   const [showFuseMachine, setShowFuseMachine] = useState(false);
   const [fuseSlots, setFuseSlots] = useState<string[]>([]);
@@ -1442,7 +1452,13 @@ export default function RngMachine() {
     if (soundEnabledRef.current) startAudioEngine();
     setShowRebirth(false);
     setShowFuseMachine(true);
+    setActiveTab("fuse");
     setGameStarted(true);
+  }
+
+  function openGameTab(tab: GameTab) {
+    setActiveTab(tab);
+    setShowFuseMachine(tab === "fuse");
   }
 
   function enterGame() {
@@ -1455,6 +1471,7 @@ export default function RngMachine() {
     }
     setShowRebirth(false);
     setShowFuseMachine(false);
+    setActiveTab("roll");
     setFuseSlots([]);
     setFuseResult(null);
     setGameStarted(true);
@@ -1673,8 +1690,17 @@ export default function RngMachine() {
         <section className={styles.fuseScreen} aria-label="Fuse Machine">
           <header className={styles.fuseHeader}>
             <div><p className={styles.eyebrow}>Meme Laboratory</p><h1>Fuse Machine</h1></div>
-            <div><span>{ownedTotal}/{maxCharacterSlots} stored</span><button onClick={() => { setFuseSlots([]); setFuseResult(null); setShowFuseMachine(false); setGameStarted(false); }}>↩ Home</button></div>
+            <div><span>{ownedTotal}/{maxCharacterSlots} stored</span><button onClick={() => { setFuseSlots([]); setFuseResult(null); openGameTab("roll"); }}>↩ Back to Roll</button></div>
           </header>
+
+          <nav className={styles.gameTabs} aria-label="Game sections">
+            {GAME_TABS.map(([tab, icon, label]) => (
+              <button key={tab} data-active={activeTab === tab} onClick={() => openGameTab(tab)}>
+                <span aria-hidden="true">{icon}</span>
+                {label}
+              </button>
+            ))}
+          </nav>
 
           <div className={styles.fuseLayout}>
             <div className={styles.fuseMachineShell} data-active={isFusing}>
@@ -1761,7 +1787,7 @@ export default function RngMachine() {
           </button>
           <button
             className={styles.menuButton}
-            onClick={() => { setShowFuseMachine(false); setGameStarted(false); }}
+            onClick={() => { setShowFuseMachine(false); setActiveTab("roll"); setGameStarted(false); }}
             aria-label="Return to the Meme RNG title screen"
           >
             <span aria-hidden="true">↩</span>
@@ -1784,9 +1810,19 @@ export default function RngMachine() {
             {lastDailyClaim === currentDayKey ? "Daily claimed" : `Claim day ${dailyStreak >= 7 ? 1 : dailyStreak + 1}`}
             <small>{dailyStreak === 6 ? "Mutation guaranteed!" : "Daily reward"}</small>
           </button>
-          <button className={styles.indexButton} onClick={() => setShowIndex(true)}>Meme-dex<small>Collection index</small></button>
+          <button className={styles.indexButton} onClick={() => setActiveTab("collection")}>Collection<small>{collection.length} active cards</small></button>
         </div>
 
+        <nav className={styles.gameTabs} aria-label="Game sections">
+          {GAME_TABS.map(([tab, icon, label]) => (
+            <button key={tab} data-active={activeTab === tab} onClick={() => openGameTab(tab)}>
+              <span aria-hidden="true">{icon}</span>
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        {activeTab === "roll" && (
         <div className={styles.landscapeGrid}>
         <div className={styles.machineShell} data-rolling={isRolling}>
           <div className={styles.machineTop}>
@@ -1850,11 +1886,11 @@ export default function RngMachine() {
                     key={reelCycle}
                     style={
                       {
-                        "--reel-end": `${-67 - winningIndex * 150}px`,
+                        "--reel-end": `${-107 - winningIndex * 230}px`,
                         "--reel-duration": `${reelDuration}ms`,
                         transform: isReelMoving
                           ? undefined
-                          : `translateX(${-67 - winningIndex * 150}px)`,
+                          : `translateX(${-107 - winningIndex * 230}px)`,
                       } as React.CSSProperties
                     }
                   >
@@ -1966,14 +2002,20 @@ export default function RngMachine() {
             )}
           </div>
         </div>
+        </div>
+        )}
 
+        {activeTab === "collection" && (
         <section className={styles.collection} aria-labelledby="collection-title">
           <div className={styles.collectionHeading}>
             <div>
               <p className={styles.eyebrow}>Passive income</p>
               <h2 id="collection-title">Collection</h2>
             </div>
-            <span>{ownedTotal}/{maxCharacterSlots} active · +1 per rebirth</span>
+            <div className={styles.collectionMeta}>
+              <span>{ownedTotal}/{maxCharacterSlots} active · +1 per rebirth</span>
+              <button className={styles.dexButton} onClick={() => setShowIndex(true)}>Open Meme-dex</button>
+            </div>
           </div>
 
           {collection.length ? (
@@ -2019,8 +2061,9 @@ export default function RngMachine() {
           )}
 
         </section>
-        </div>
+        )}
 
+        {activeTab === "upgrades" && (
         <div className={styles.upgradeTree}>
           <div className={styles.upgradeTitle}>
             <p className={styles.eyebrow}>Capsule machine upgrades</p>
@@ -2051,8 +2094,10 @@ export default function RngMachine() {
             );
           })}
         </div>
+        )}
 
-        <section className={styles.progressionHub} aria-label="Meme RNG progression">
+        {(activeTab === "shop" || activeTab === "more") && (
+        <section className={styles.progressionHub} data-tab={activeTab} aria-label="Meme RNG progression">
           <article className={styles.hubCard}>
             <div className={styles.hubHeading}><span>◎</span><div><p>Objectives</p><h3>Quests</h3></div></div>
             <div className={styles.questList}>
@@ -2139,6 +2184,7 @@ export default function RngMachine() {
             <div>{Array.from({ length: 7 }, (_, index) => <span key={index} data-reached={dailyStreak > index}><b>Day {index + 1}</b><small>{index === 6 ? "Mutation" : `$${formatCash((index + 1) * 50_000)}`}</small></span>)}</div>
           </article>
         </section>
+        )}
 
         {showIndex && (
           <div className={styles.indexOverlay} role="dialog" aria-modal="true" aria-label="Meme-dex collection index">
@@ -2161,7 +2207,7 @@ export default function RngMachine() {
           </div>
         )}
 
-        <button className={styles.resetButton} onClick={resetSave}>Reset saved game</button>
+        {activeTab === "more" && <button className={styles.resetButton} onClick={resetSave}>Reset saved game</button>}
       </section>
     </main>
   );

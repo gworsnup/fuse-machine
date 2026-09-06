@@ -1,4 +1,4 @@
-const CACHE_NAME = "meme-rng-v1";
+const CACHE_NAME = "meme-rng-v2";
 const GAME_URL = "/";
 const CORE_ASSETS = [
   GAME_URL,

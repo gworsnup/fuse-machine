@@ -706,9 +706,9 @@
 
 .reelCard {
   display: grid;
-  width: 134px;
+  width: 214px;
   height: 214px;
-  flex: 0 0 134px;
+  flex: 0 0 214px;
   grid-template-rows: 154px auto auto auto;
   align-items: center;
   padding: 7px 7px 10px;
@@ -1425,7 +1425,7 @@
   70% { transform: scale(1.025); }
 }
 @keyframes reelScroll {
-  from { transform: translateX(-67px); }
+  from { transform: translateX(-107px); }
   to { transform: translateX(var(--reel-end)); }
 }
 
@@ -2457,4 +2457,136 @@
   .game > .upgradeTree .upgradeBranch > div:first-child strong { font-size: .52rem; }
   .game > .upgradeTree .upgradeBranch > div:first-child span { font-size: .42rem; }
   .game > .upgradeTree .upgradeBranch button { min-width: 58px; font-size: .42rem; }
+}
+
+.gameTabs {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+  margin: 0 auto 11px;
+  padding: 7px;
+  border: 3px solid #2275b5;
+  border-radius: 19px;
+  background: linear-gradient(180deg, #73cff5, #42a9df);
+  box-shadow: 0 5px 0 #15548a, inset 0 2px rgba(255,255,255,.5);
+}
+.gameTabs button {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 2px solid #b89463;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #fffdf5, #ffebc9);
+  color: #244c70;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #8d6947, inset 0 2px #fff;
+  font-size: .72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  transition: transform 140ms ease, filter 140ms ease;
+}
+.gameTabs button:hover { transform: translateY(-2px); }
+.gameTabs button[data-active="true"] {
+  border-color: #d98e12;
+  background: linear-gradient(180deg, #ffe97b, #ffc832);
+  color: #653b00;
+  box-shadow: 0 4px 0 #b76a0d, inset 0 2px rgba(255,255,255,.6);
+}
+.gameTabs button span { font-size: 1.05rem; }
+.fuseScreen > .gameTabs { width: min(100%, 1180px); margin: 0 auto 16px; }
+
+.landscapeGrid {
+  width: min(100%, 980px);
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0 auto;
+}
+
+.collection {
+  width: min(100%, 1100px);
+  max-height: none;
+  margin: 0 auto;
+}
+.collectionMeta { display: grid; justify-items: end; gap: 6px; }
+.collectionMeta > span { color: #174a78; font-size: .72rem; font-weight: 850; }
+.dexButton {
+  padding: 7px 11px;
+  border: 2px solid #d78c13;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #ffe77b, #ffc832);
+  color: #663c00;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #b76b0d;
+  font-size: .58rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+.collectionGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.miniOrb { height: 118px; }
+
+.game > .upgradeTree {
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  grid-template-columns: 1.05fr repeat(3, 1fr);
+}
+.game > .upgradeTree .upgradeTitle,
+.game > .upgradeTree .upgradeBranch { min-height: 150px; }
+.game > .upgradeTree .upgradeBranch { align-content: center; }
+
+.progressionHub[data-tab="shop"] {
+  width: min(100%, 820px);
+  grid-template-columns: 1fr;
+  margin: 0 auto;
+}
+.progressionHub[data-tab="shop"] > article:not(:nth-child(2)) { display: none; }
+.progressionHub[data-tab="shop"] .potionGrid { grid-template-columns: repeat(2, 1fr); }
+.progressionHub[data-tab="shop"] .potionGrid > div { min-height: 120px; padding: 14px; }
+.progressionHub[data-tab="more"] { margin-top: 0; }
+.progressionHub[data-tab="more"] > article:nth-child(2) { display: none; }
+.progressionHub[data-tab="more"] .dailyTrack { grid-column: span 3; }
+
+@media (max-width: 1050px) {
+  .collectionGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .game > .upgradeTree { grid-template-columns: repeat(3, 1fr); }
+  .game > .upgradeTree .upgradeTitle { grid-column: 1 / -1; min-height: 80px; }
+}
+
+@media (max-width: 760px) {
+  .gameTabs button { font-size: .58rem; }
+  .gameTabs button span { display: none; }
+  .collectionGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  .gameTabs {
+    gap: 4px;
+    margin-bottom: 6px;
+    padding: 4px;
+    border-width: 2px;
+    border-radius: 11px;
+    box-shadow: 0 3px 0 #15548a;
+  }
+  .gameTabs button {
+    min-height: 29px;
+    gap: 4px;
+    border-width: 1px;
+    border-radius: 7px;
+    box-shadow: 0 2px 0 #8d6947;
+    font-size: .48rem;
+  }
+  .gameTabs button span { display: inline; font-size: .68rem; }
+  .landscapeGrid { width: min(100%, 920px); }
+  .collection { width: min(100%, 920px); max-height: 295px; }
+  .collectionGrid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .collectionCard { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  .collectionCard > div:nth-child(2) { text-align: center; }
+  .miniOrb { grid-row: auto; width: 100%; height: 58px; }
+  .game > .upgradeTree { width: min(100%, 920px); grid-template-columns: repeat(3, 1fr); }
+  .game > .upgradeTree .upgradeTitle { grid-column: 1 / -1; min-height: 42px; }
+  .game > .upgradeTree .upgradeTitle,
+  .game > .upgradeTree .upgradeBranch { min-height: 0; }
+  .progressionHub[data-tab="shop"],
+  .progressionHub[data-tab="more"] { width: min(100%, 920px); margin: 0 auto; }
+  .progressionHub[data-tab="shop"] .potionGrid > div { min-height: 0; padding: 8px; }
 }
