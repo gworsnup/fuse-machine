@@ -73,7 +73,7 @@ type CharacterPerformance = {
   voiceRate: number;
 };
 
-const SPIN_COST = 10_000;
+const SPIN_COST = 4_000;
 const STARTING_CASH = 50_000;
 const MAX_ACTIVE_ODDLINGS = 5;
 const MAX_UPGRADE_LEVEL = 5;
@@ -127,7 +127,7 @@ function getSpinCost(upgrades: Upgrades) {
     (total, level) => total + level,
     0,
   );
-  return Math.round((SPIN_COST * Math.pow(1.5, purchasedLevels)) / 100) * 100;
+  return Math.round((SPIN_COST * Math.pow(1.25, purchasedLevels)) / 100) * 100;
 }
 
 function getLuckChance(upgrades: Upgrades, rebirths: number) {
@@ -207,7 +207,7 @@ const tutorialSteps = [
     icon: "⬆",
     title: "Upgrade the machine",
     body: "Spend earnings on the three upgrade branches: Luck improves clover chances, Speed shortens the rolling animation, and Mutation increases special mutation chances. Roll prices rise slightly as the machine improves.",
-    tip: "Upgrade and roll prices scale sharply with your progress, so every new level needs a fresh earning goal.",
+    tip: "Upgrade prices scale sharply with your progress, while normal rolls stay affordable enough to keep playing.",
   },
   {
     icon: "⚡",
@@ -785,7 +785,7 @@ export default function RngMachine() {
   const fusionOdds = getFusionOdds(fuseInputs);
   const spinCost = useMemo(
     () => {
-      const progressionFloor = incomePerSecond * 20;
+      const progressionFloor = incomePerSecond * 3;
       const balancedCost = Math.max(getSpinCost(upgrades), progressionFloor);
       return Math.round(balancedCost * (hasTrolliniAbility ? 0.95 : 1) / 100) * 100;
     },
