@@ -915,13 +915,16 @@ export default function RngMachine() {
   function startMusicLoop() {
     if (musicTimer.current !== null || !soundEnabledRef.current) return;
 
-    const melody = [
-      659.25, 783.99, 880, 783.99,
-      659.25, 523.25, 587.33, 659.25,
-      698.46, 880, 1_046.5, 880,
-      698.46, 587.33, 659.25, 783.99,
+    // An original bubble-pop arcade loop in C major. The rests and alternating
+    // octaves keep it playful without turning into a constant wall of sound.
+    const melody: Array<number | null> = [
+      783.99, null, 659.25, 523.25, 587.33, 659.25, null, 523.25,
+      880, null, 783.99, 659.25, 587.33, null, 659.25, 783.99,
+      1_046.5, 783.99, null, 659.25, 698.46, 783.99, 659.25, null,
+      587.33, 659.25, 523.25, null, 659.25, 587.33, 523.25, null,
     ];
-    const bass = [261.63, 220, 174.61, 196];
+    const bass = [130.81, 164.81, 110, 146.83, 130.81, 174.61, 146.83, 98];
+    const sparkle = [1_318.51, 1_568, 1_174.66, 1_396.91];
 
     const playBeat = () => {
       const context = audioContext.current;
@@ -930,36 +933,54 @@ export default function RngMachine() {
 
       const step = musicStep.current;
       const now = context.currentTime;
-      const note = context.createOscillator();
-      const noteGain = context.createGain();
-      note.type = step % 4 === 2 ? "sine" : "triangle";
-      note.frequency.value = melody[step % melody.length];
-      noteGain.gain.setValueAtTime(0.0001, now);
-      noteGain.gain.exponentialRampToValueAtTime(0.18, now + 0.012);
-      noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-      note.connect(noteGain);
-      noteGain.connect(master);
-      note.start(now);
-      note.stop(now + 0.24);
+      const melodyFrequency = melody[step % melody.length];
+
+      if (melodyFrequency) {
+        const note = context.createOscillator();
+        const noteGain = context.createGain();
+        note.type = step % 8 === 0 ? "sine" : "triangle";
+        note.frequency.value = melodyFrequency;
+        noteGain.gain.setValueAtTime(0.0001, now);
+        noteGain.gain.exponentialRampToValueAtTime(0.16, now + 0.014);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
+        note.connect(noteGain);
+        noteGain.connect(master);
+        note.start(now);
+        note.stop(now + 0.18);
+      }
 
       if (step % 4 === 0) {
         const bassNote = context.createOscillator();
         const bassGain = context.createGain();
-        bassNote.type = "sine";
+        bassNote.type = "triangle";
         bassNote.frequency.value = bass[(step / 4) % bass.length];
-        bassGain.gain.setValueAtTime(0.12, now);
-        bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+        bassGain.gain.setValueAtTime(0.09, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
         bassNote.connect(bassGain);
         bassGain.connect(master);
         bassNote.start(now);
-        bassNote.stop(now + 0.44);
+        bassNote.stop(now + 0.34);
+      }
+
+      if (step % 8 === 6) {
+        const chime = context.createOscillator();
+        const chimeGain = context.createGain();
+        chime.type = "sine";
+        chime.frequency.value = sparkle[Math.floor(step / 8) % sparkle.length];
+        chimeGain.gain.setValueAtTime(0.0001, now);
+        chimeGain.gain.exponentialRampToValueAtTime(0.055, now + 0.01);
+        chimeGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28);
+        chime.connect(chimeGain);
+        chimeGain.connect(master);
+        chime.start(now);
+        chime.stop(now + 0.3);
       }
 
       musicStep.current = (step + 1) % melody.length;
     };
 
     playBeat();
-    musicTimer.current = window.setInterval(playBeat, 280);
+    musicTimer.current = window.setInterval(playBeat, 215);
   }
 
   function stopMusicLoop() {
