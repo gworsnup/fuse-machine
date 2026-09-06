@@ -1692,7 +1692,7 @@ export default function RngMachine() {
                     <strong>{result.name}</strong>
                     <small>
                       {result.mutation !== "normal" && `${result.mutation} · `}
-                      {result.rarity}
+                      {result.rarity} · ${formatCash(result.income * mutationMultipliers[result.mutation])}/sec
                     </small>
                     <b className={styles.oddsBadge}>1 in {formatOdds(result.oddsOneIn)}</b>
                   </div>
@@ -1747,6 +1747,11 @@ export default function RngMachine() {
                         )}
                         <span>{isLuckToken(entry) ? `${entry.multiplier}× Luck` : entry.rarity}</span>
                         <strong>{entry.name}</strong>
+                        {!isLuckToken(entry) && (
+                          <small className={styles.reelIncome}>
+                            ${formatCash(entry.income * mutationMultipliers[activeMutation])}/sec
+                          </small>
+                        )}
                       </article>
                     ))}
                   </div>

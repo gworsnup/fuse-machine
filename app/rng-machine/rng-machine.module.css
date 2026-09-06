@@ -704,7 +704,7 @@
   width: 134px;
   height: 214px;
   flex: 0 0 134px;
-  grid-template-rows: 154px auto auto;
+  grid-template-rows: 154px auto auto auto;
   align-items: center;
   padding: 7px 7px 10px;
   border: 1px solid #332c3c;
@@ -734,6 +734,13 @@
 }
 .reelCard > span { font-size: 0.55rem; font-weight: 950; letter-spacing: 0.14em; text-transform: uppercase; }
 .reelCard > strong { overflow: hidden; font-size: 0.72rem; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.reelIncome {
+  color: #8dffb6;
+  font-size: 0.62rem;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(75, 255, 143, 0.35);
+}
 .reelCard[data-rarity="Legendary"] { border-color: rgba(255, 211, 77, 0.48); color: #ffd34d; }
 .reelCard[data-rarity="Mythic"] { border-color: rgba(255, 51, 79, 0.55); color: #ff334f; }
 .reelCard[data-rarity="Godly"] { border-color: rgba(112, 235, 255, 0.62); color: #8df6ff; }
@@ -1352,8 +1359,8 @@
   .rollReveal { gap: 6px; padding-inline: 18px; }
   .rollReveal > div { max-width: 52%; }
   .rollReveal img { width: 45%; height: 195px; }
-  .reelCard { height: 204px; grid-template-rows: 144px auto auto; }
-  .reelCard img { height: 144px; }
+  .reelCard { height: 204px; grid-template-rows: 134px auto auto auto; }
+  .reelCard img { height: 134px; }
   .luckTrack { gap: 4px; }
   .luckTrack span { min-width: 0; padding: 6px; }
   .resultActions { grid-template-columns: 1fr 1fr; }
@@ -1485,13 +1492,16 @@
   .reelTrack { top: 5px; }
   .reelCard {
     height: 118px;
-    grid-template-rows: 82px 12px 14px;
+    grid-template-rows: 72px 10px 13px 12px;
     padding: 4px 7px 5px;
     border-radius: 9px;
   }
   .reelCard img,
-  .cloverArtwork { height: 82px; }
+  .cloverArtwork { height: 72px; }
   .cloverArtwork { transform: scale(0.72); }
+  .reelCard > span { font-size: 0.46rem; }
+  .reelCard > strong { font-size: 0.62rem; }
+  .reelIncome { font-size: 0.54rem; }
   .centreMarker { border-radius: 9px; }
 
   .rollReveal { gap: 12px; padding: 5px 16px; }
