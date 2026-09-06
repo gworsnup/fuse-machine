@@ -1,0 +1,22 @@
+:root {
+  color-scheme: dark;
+  background: #0a0436;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: #0a0436;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}

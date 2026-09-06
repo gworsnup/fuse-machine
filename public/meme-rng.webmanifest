@@ -1,0 +1,29 @@
+{
+  "name": "Meme RNG",
+  "short_name": "Meme RNG",
+  "description": "Spin for rare memes, build passive income, fuse characters and rebirth.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#0a0436",
+  "theme_color": "#0a0436",
+  "lang": "en-GB",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/icons/meme-rng-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/meme-rng-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
