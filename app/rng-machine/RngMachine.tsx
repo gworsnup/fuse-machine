@@ -1971,7 +1971,7 @@ export default function RngMachine() {
           <div className={styles.collectionHeading}>
             <div>
               <p className={styles.eyebrow}>Passive income</p>
-              <h2 id="collection-title">My Memes</h2>
+              <h2 id="collection-title">Collection</h2>
             </div>
             <span>{ownedTotal}/{maxCharacterSlots} active · +1 per rebirth</span>
           </div>
@@ -2018,37 +2018,38 @@ export default function RngMachine() {
             </div>
           )}
 
-          <div className={styles.upgradeTree}>
-            <div className={styles.upgradeTitle}>
-              <p className={styles.eyebrow}>Machine upgrades</p>
-              <h3>Upgrade Tree</h3>
-            </div>
-            {([
-              ["luck", "Lucky Circuit", `Luck step: ${(getLuckChance(upgrades, rebirths) * 100).toFixed(1)}%`],
-              ["speed", "Turbo Motor", `Reel speed: +${upgrades.speed * 8}%`],
-              ["mutation", "Mutation Lab", `Mutation chance: ${30 + upgrades.mutation * 3}%`],
-            ] as const).map(([branch, name, detail]) => {
-              const level = upgrades[branch];
-              const isMaxed = level >= MAX_UPGRADE_LEVEL;
-              return (
-                <article className={styles.upgradeBranch} data-branch={branch} key={branch}>
-                  <div>
-                    <strong>{name}</strong>
-                    <span>{detail}</span>
-                  </div>
-                  <div className={styles.levelPips} aria-label={`Level ${level} of ${MAX_UPGRADE_LEVEL}`}>
-                    {Array.from({ length: MAX_UPGRADE_LEVEL }, (_, index) => (
-                      <i key={index} data-filled={index < level} />
-                    ))}
-                  </div>
-                  <button onClick={() => buyUpgrade(branch)} disabled={isMaxed}>
-                    {isMaxed ? "Maxed" : `Upgrade · $${formatCash(upgradeCosts[branch][level])}`}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
         </section>
+        </div>
+
+        <div className={styles.upgradeTree}>
+          <div className={styles.upgradeTitle}>
+            <p className={styles.eyebrow}>Capsule machine upgrades</p>
+            <h3>Power up the arcade</h3>
+          </div>
+          {([
+            ["luck", "Lucky Circuit", `Luck step: ${(getLuckChance(upgrades, rebirths) * 100).toFixed(1)}%`],
+            ["speed", "Turbo Motor", `Reel speed: +${upgrades.speed * 8}%`],
+            ["mutation", "Mutation Lab", `Mutation chance: ${30 + upgrades.mutation * 3}%`],
+          ] as const).map(([branch, name, detail]) => {
+            const level = upgrades[branch];
+            const isMaxed = level >= MAX_UPGRADE_LEVEL;
+            return (
+              <article className={styles.upgradeBranch} data-branch={branch} key={branch}>
+                <div>
+                  <strong>{name}</strong>
+                  <span>{detail}</span>
+                </div>
+                <div className={styles.levelPips} aria-label={`Level ${level} of ${MAX_UPGRADE_LEVEL}`}>
+                  {Array.from({ length: MAX_UPGRADE_LEVEL }, (_, index) => (
+                    <i key={index} data-filled={index < level} />
+                  ))}
+                </div>
+                <button onClick={() => buyUpgrade(branch)} disabled={isMaxed}>
+                  {isMaxed ? "Maxed" : `Upgrade · $${formatCash(upgradeCosts[branch][level])}`}
+                </button>
+              </article>
+            );
+          })}
         </div>
 
         <section className={styles.progressionHub} aria-label="Meme RNG progression">
