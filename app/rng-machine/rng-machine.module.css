@@ -2856,7 +2856,6 @@
 .silhouetteChamber { position: relative; z-index: 3; display: grid; width: min(48vh, 390px); height: min(43vh, 350px); place-items: center; }
 .openingBlockImage { width: min(38vh, 300px); height: min(38vh, 300px); object-fit: contain; filter: drop-shadow(0 18px 20px rgba(0,0,0,.42)) drop-shadow(0 0 28px rgba(255,169,42,.5)); animation: openingBlockHover 1s ease-in-out infinite alternate; }
 .autumnOpeningStage[data-phase="shuffling"] .silhouetteChamber { animation: chamberPulse .22s ease-in-out infinite alternate; }
-.autumnSilhouette { width: min(40vh, 320px); height: min(40vh, 320px); background: var(--silhouette-colour); filter: drop-shadow(0 0 18px var(--silhouette-colour)) drop-shadow(0 16px 12px rgba(0,0,0,.35)); mask: var(--silhouette-image) center / contain no-repeat; -webkit-mask: var(--silhouette-image) center / contain no-repeat; }
 .autumnWinnerImage { width: min(43vh, 350px); height: min(43vh, 350px); object-fit: contain; filter: drop-shadow(0 17px 15px rgba(0,0,0,.36)) drop-shadow(0 0 25px rgba(255,190,62,.54)); animation: winnerLand .7s cubic-bezier(.22,1.4,.45,1) both; }
 .harvestPedestal { position: relative; z-index: 4; width: min(62vw, 400px); height: 52px; margin-top: -25px; border: 4px solid #4f281e; border-radius: 50%; background: radial-gradient(ellipse, #f4bd55 0 18%, #9b4b2d 50%, #46261c 72%); box-shadow: 0 18px 0 #321d17, 0 30px 25px rgba(0,0,0,.38), inset 0 5px rgba(255,220,124,.42); }
 .harvestPedestal::after { position: absolute; top: 34px; left: 13%; width: 74%; height: 70px; border: 4px solid #4f281e; border-top: 0; border-radius: 0 0 25px 25px; background: linear-gradient(90deg, #703122, #a6532d 50%, #692d21); content: ""; }
@@ -2922,7 +2921,7 @@
   .autumnOddsStrip > div, .autumnOddsStrip > div:last-child { grid-column: auto; grid-template-columns: 33px 1fr; padding: 3px; border-width: 1px; }
   .autumnOddsStrip img { width: 33px; height: 33px; }
   .silhouetteChamber { width: 230px; height: 190px; }
-  .openingBlockImage, .autumnWinnerImage, .autumnSilhouette { width: 185px; height: 185px; }
+  .openingBlockImage, .autumnWinnerImage { width: 185px; height: 185px; }
   .harvestPedestal { width: 280px; height: 35px; margin-top: -15px; }
   .harvestPedestal::after { top: 23px; height: 38px; }
   .harvestPedestal strong { top: 9px; }
@@ -2934,4 +2933,129 @@
   .skySprites i, .introScreen::before, .machineShell, .autumnBlockArt img,
   .openingBlockImage, .stockBlocks i, .autumnOpeningStage::before,
   .fallingLeaves i { animation: none !important; }
+}
+
+/* Grind rebalance, dedicated rebirth tab, and smoother full-character reveal reel. */
+.gameTabs { grid-template-columns: repeat(7, 1fr); }
+.introButtons {
+  width: min(100%, 430px);
+  grid-template-columns: 1fr;
+  margin: 0 auto;
+}
+.introButtons .playButton { min-height: 76px; }
+
+.autumnRollingCharacter {
+  position: relative;
+  display: grid;
+  width: min(43vh, 350px);
+  height: min(43vh, 350px);
+  place-items: center;
+  overflow: hidden;
+}
+.autumnRollingCharacter::before,
+.autumnRollingCharacter::after {
+  position: absolute;
+  z-index: 2;
+  left: 8%;
+  width: 84%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,222,126,.75), transparent);
+  content: "";
+  filter: blur(.5px);
+  animation: autumnReelScan .48s linear infinite;
+}
+.autumnRollingCharacter::before { top: 26%; }
+.autumnRollingCharacter::after { top: 69%; animation-delay: -.24s; }
+.autumnShuffleImage {
+  width: min(41vh, 335px);
+  height: min(41vh, 335px);
+  object-fit: contain;
+  filter: drop-shadow(0 16px 13px rgba(0,0,0,.38)) drop-shadow(0 0 18px rgba(255,182,58,.42));
+  animation: autumnCharacterRoll .34s cubic-bezier(.18,.78,.25,1) both;
+  will-change: transform, filter, opacity;
+}
+.autumnRollingCharacter > i {
+  position: absolute;
+  right: 8%;
+  bottom: 12%;
+  left: 8%;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(33,15,11,.34);
+  filter: blur(8px);
+  animation: rollingShadow .34s ease both;
+}
+
+.rebirthTab {
+  display: grid;
+  width: min(100%, 1000px);
+  gap: 13px;
+  margin: 0 auto;
+}
+.rebirthTabHero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 17px;
+  padding: 20px;
+  border: 4px solid #5c2b20;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #bf5232, #7e302c);
+  box-shadow: 0 7px 0 #462119, 0 18px 35px rgba(61,25,15,.28), inset 0 3px rgba(255,226,154,.24);
+}
+.rebirthTabHero > span {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border: 3px solid #ffd067;
+  border-radius: 50%;
+  background: #673025;
+  font-size: 2rem;
+  box-shadow: 0 4px 0 #492018;
+  animation: rebirthSpin 5s linear infinite;
+}
+.rebirthTabHero h2 { margin: 2px 0 4px; color: #fff2bb; font-size: 1.8rem; }
+.rebirthTabHero p:not(.eyebrow) { margin: 0; color: #f4d7aa; font-size: .72rem; font-weight: 750; }
+.rebirthTabHero > strong { padding: 9px 13px; border: 2px solid #efb34b; border-radius: 999px; background: #5f2a22; color: #ffd978; font-size: .68rem; text-transform: uppercase; }
+.rebirthBenefits { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+.rebirthBenefits div { display: grid; min-height: 92px; place-content: center; padding: 12px; border: 3px solid #705034; border-radius: 17px; background: linear-gradient(145deg, #fff6d5, #e8c183); color: #65301f; box-shadow: 0 4px 0 #573120; text-align: center; }
+.rebirthBenefits strong { color: #a13d29; font-size: 1.25rem; }
+.rebirthBenefits span { margin-top: 4px; color: #85533a; font-size: .56rem; font-weight: 900; text-transform: uppercase; }
+.rebirthTab .rebirthPanel { margin: 0; padding: 20px; border-color: #704027; background: linear-gradient(145deg, #fff3ce, #dfb674); box-shadow: 0 6px 0 #57301f; }
+.rebirthTab .rebirthRequirements > div { min-height: 125px; border-color: #9e7146; background: rgba(255,250,225,.72); color: #7d563e; }
+.rebirthTab .rebirthRequirements > div[data-complete="true"] { border-color: #668442; background: #e6efbc; color: #31532d; }
+.rebirthTab .rebirthWarning { color: #7d4b36; font-weight: 750; }
+
+@keyframes autumnCharacterRoll {
+  0% { opacity: .15; transform: translate3d(0,-42px,0) scale(.82); filter: blur(11px) drop-shadow(0 18px 12px rgba(0,0,0,.25)); }
+  48% { opacity: 1; transform: translate3d(0,5px,0) scale(1.035); filter: blur(1px) drop-shadow(0 16px 13px rgba(0,0,0,.38)); }
+  100% { opacity: 1; transform: translate3d(0,0,0) scale(1); filter: blur(0) drop-shadow(0 16px 13px rgba(0,0,0,.38)) drop-shadow(0 0 18px rgba(255,182,58,.42)); }
+}
+@keyframes autumnReelScan { from { transform: translateY(-18px); opacity: 0; } 45% { opacity: 1; } to { transform: translateY(22px); opacity: 0; } }
+@keyframes rollingShadow { from { opacity: .2; transform: scaleX(.5); } to { opacity: 1; transform: scaleX(1); } }
+@keyframes rebirthSpin { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .gameTabs button { gap: 3px; padding-inline: 4px; font-size: .51rem; }
+  .rebirthBenefits { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  .introButtons { width: 310px; }
+  .introButtons .playButton { min-height: 48px; }
+  .gameTabs button { font-size: .42rem; }
+  .autumnRollingCharacter, .autumnShuffleImage { width: 190px; height: 190px; }
+  .rebirthTab { width: min(100%, 920px); grid-template-columns: .8fr 1.4fr; gap: 7px; }
+  .rebirthTabHero { grid-column: 1 / -1; grid-template-columns: auto 1fr auto; gap: 9px; padding: 7px 12px; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #462119; }
+  .rebirthTabHero > span { width: 38px; height: 38px; border-width: 2px; font-size: 1rem; }
+  .rebirthTabHero h2 { font-size: 1rem; }
+  .rebirthTabHero p:not(.eyebrow) { font-size: .47rem; }
+  .rebirthBenefits { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .rebirthBenefits div { min-height: 54px; padding: 5px; border-width: 2px; border-radius: 9px; box-shadow: 0 2px 0 #573120; }
+  .rebirthBenefits strong { font-size: .75rem; }
+  .rebirthTab .rebirthPanel { padding: 8px; border-width: 2px; box-shadow: 0 3px 0 #57301f; }
+  .rebirthTab .rebirthRequirements > div { min-height: 70px; }
+  .rebirthTab .rebirthRequirements img { width: 42px; height: 42px; }
+  .rebirthTab .rebirthWarning { margin: 5px 0; font-size: .48rem; }
 }

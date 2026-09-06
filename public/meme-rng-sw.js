@@ -1,4 +1,4 @@
-const CACHE_NAME = "roll-a-meme-autumn-v1";
+const CACHE_NAME = "roll-a-meme-autumn-v2";
 const GAME_URL = "/";
 const CORE_ASSETS = [
   GAME_URL,

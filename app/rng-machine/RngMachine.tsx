@@ -31,7 +31,7 @@ type Mutation = "normal" | "gold" | "diamond" | "rainbow";
 type OwnedOddling = Oddling & { count: number; mutation: Mutation };
 type RolledOddling = Oddling & { mutation: Mutation; oddsOneIn: number };
 type UpgradeBranch = "luck" | "speed" | "mutation";
-type GameTab = "roll" | "collection" | "upgrades" | "shop" | "fuse" | "more";
+type GameTab = "roll" | "collection" | "upgrades" | "shop" | "fuse" | "rebirth" | "more";
 type Upgrades = Record<UpgradeBranch, number>;
 type PotionKind = "luck" | "mutation" | "turbo" | "double";
 type SpecialEvent = "meteor" | "glitch" | "golden" | "double" | null;
@@ -73,8 +73,8 @@ type CharacterPerformance = {
   voiceRate: number;
 };
 
-const SPIN_COST = 2_000;
-const STARTING_CASH = 60_000;
+const SPIN_COST = 10_000;
+const STARTING_CASH = 50_000;
 const MAX_ACTIVE_ODDLINGS = 5;
 const MAX_UPGRADE_LEVEL = 5;
 const LUCK_LEVELS = [1, 2, 4, 6, 8, 10, 20] as const;
@@ -89,6 +89,7 @@ const GAME_TABS: readonly [GameTab, string, string][] = [
   ["upgrades", "⬆", "Upgrades"],
   ["shop", "🧪", "Potions"],
   ["fuse", "🧬", "Fuse"],
+  ["rebirth", "♻", "Rebirth"],
   ["more", "⭐", "More"],
 ];
 
@@ -126,7 +127,7 @@ function getSpinCost(upgrades: Upgrades) {
     (total, level) => total + level,
     0,
   );
-  return Math.round((SPIN_COST * Math.pow(1.3, purchasedLevels)) / 100) * 100;
+  return Math.round((SPIN_COST * Math.pow(1.5, purchasedLevels)) / 100) * 100;
 }
 
 function getLuckChance(upgrades: Upgrades, rebirths: number) {
@@ -143,10 +144,11 @@ function getRebirthRecipe(rebirths: number) {
 }
 
 const upgradeCosts: Record<UpgradeBranch, number[]> = {
-  luck: [25_000, 100_000, 500_000, 2_000_000, 10_000_000],
-  speed: [20_000, 80_000, 350_000, 1_500_000, 7_000_000],
-  mutation: [50_000, 250_000, 1_000_000, 5_000_000, 25_000_000],
+  luck: [500_000, 3_000_000, 20_000_000, 175_000_000, 2_000_000_000],
+  speed: [350_000, 2_000_000, 15_000_000, 125_000_000, 1_500_000_000],
+  mutation: [750_000, 5_000_000, 35_000_000, 300_000_000, 3_000_000_000],
 };
+const upgradeIncomeSeconds = [120, 300, 900, 1_800, 3_600];
 
 const luckTokens: Record<number, LuckToken> = {
   2: { id: "luck-2", kind: "luck", multiplier: 2, name: "Green Clover", clovers: 1, theme: "green" },
@@ -180,7 +182,7 @@ const tutorialSteps = [
   {
     icon: "💸",
     title: "Build passive income",
-    body: "Collected characters earn cash every second. Mutations and level upgrades increase their income, and the game also awards half of that income while you are away for up to eight hours.",
+    body: "Collected characters earn cash every second. Mutations and level upgrades increase their income. Offline earnings run at 25% power for up to ten minutes and stop when your rebirth vault is full.",
     tip: "Higher rarity usually means much stronger income.",
   },
   {
@@ -205,7 +207,7 @@ const tutorialSteps = [
     icon: "⬆",
     title: "Upgrade the machine",
     body: "Spend earnings on the three upgrade branches: Luck improves clover chances, Speed shortens the rolling animation, and Mutation increases special mutation chances. Roll prices rise slightly as the machine improves.",
-    tip: "A fully upgraded machine costs roughly $100,000 in roll fees.",
+    tip: "Upgrade and roll prices scale sharply with your progress, so every new level needs a fresh earning goal.",
   },
   {
     icon: "⚡",
@@ -281,8 +283,6 @@ const autumnOddlings: Oddling[] = [
   { id: "harvest-moon-werewolf", name: "Harvest Moon Werewolf", image: "/characters/autumn/harvest-moon-werewolf.png", description: "When the harvest moon rises, the whole forest starts earning.", rarity: "Secret", price: 800_000_000, income: 80_000_000, weight: 4.5 },
   { id: "golden-turkey-king", name: "Golden Turkey King", image: "/characters/autumn/golden-turkey-king.png", description: "The crown jewel of the Autumn Update and ruler of the golden harvest.", rarity: "OG", price: 1_450_000_000, income: 145_000_000, weight: 0.5 },
 ];
-
-const autumnRevealColours = ["#ff9d24", "#d7652b", "#9d4edd", "#e63946", "#ffd43b"];
 
 const allOddlings = [...oddlings, ...fusionOddlings, ...autumnOddlings];
 
@@ -674,7 +674,6 @@ function CloverArtwork({ token }: { token: LuckToken }) {
 export default function RngMachine() {
   const [gameStarted, setGameStarted] = useState(false);
   const [activeTab, setActiveTab] = useState<GameTab>("roll");
-  const [showRebirth, setShowRebirth] = useState(false);
   const [showFuseMachine, setShowFuseMachine] = useState(false);
   const [fuseSlots, setFuseSlots] = useState<string[]>([]);
   const [isFusing, setIsFusing] = useState(false);
@@ -732,7 +731,8 @@ export default function RngMachine() {
   const [pendingAutumnRewards, setPendingAutumnRewards] = useState<string[]>([]);
   const [showAutumnOpening, setShowAutumnOpening] = useState(false);
   const [autumnOpeningPhase, setAutumnOpeningPhase] = useState<"ready" | "shuffling" | "revealed">("ready");
-  const [autumnShuffleIndex, setAutumnShuffleIndex] = useState(0);
+  const [autumnShuffleStep, setAutumnShuffleStep] = useState(0);
+  const [autumnShuffleSequence, setAutumnShuffleSequence] = useState<number[]>([0]);
   const [autumnReveal, setAutumnReveal] = useState<Oddling | null>(null);
   const timers = useRef<number[]>([]);
   const audioContext = useRef<AudioContext | null>(null);
@@ -784,8 +784,12 @@ export default function RngMachine() {
   });
   const fusionOdds = getFusionOdds(fuseInputs);
   const spinCost = useMemo(
-    () => Math.round(getSpinCost(upgrades) * (hasTrolliniAbility ? 0.95 : 1) / 100) * 100,
-    [hasTrolliniAbility, upgrades],
+    () => {
+      const progressionFloor = incomePerSecond * 20;
+      const balancedCost = Math.max(getSpinCost(upgrades), progressionFloor);
+      return Math.round(balancedCost * (hasTrolliniAbility ? 0.95 : 1) / 100) * 100;
+    },
+    [hasTrolliniAbility, incomePerSecond, upgrades],
   );
   const rebirthRecipe = getRebirthRecipe(rebirths);
   const rebirthCharacters = rebirthRecipe.characters.map((id) =>
@@ -873,12 +877,14 @@ export default function RngMachine() {
             setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
           }
           if (parsed.savedAt && parsed.incomePerSecond && typeof parsed.cash === "number") {
-            const awaySeconds = Math.min(28_800, Math.max(0, (Date.now() - parsed.savedAt) / 1_000));
-            const offlineCash = Math.floor(awaySeconds * parsed.incomePerSecond * 0.5);
+            const awaySeconds = Math.min(600, Math.max(0, (Date.now() - parsed.savedAt) / 1_000));
+            const offlineCashCap = 5_000_000 * ((parsed.rebirths ?? 0) + 1);
+            const uncappedOfflineCash = Math.floor(awaySeconds * parsed.incomePerSecond * 0.25);
+            const offlineCash = Math.min(offlineCashCap, uncappedOfflineCash);
             if (offlineCash > 0) {
               setCash(parsed.cash + offlineCash);
               setStats((current) => ({ ...current, totalEarned: current.totalEarned + offlineCash }));
-              setMessage(`Welcome back — $${formatCash(offlineCash)} offline income collected`);
+              setMessage(`Welcome back — $${formatCash(offlineCash)} offline income collected${uncappedOfflineCash > offlineCashCap ? " (vault full)" : ""}`);
             }
           }
         } catch {
@@ -1419,10 +1425,17 @@ export default function RngMachine() {
     setLuck(1);
   }
 
+  function currentUpgradePrice(branch: UpgradeBranch) {
+    const level = upgrades[branch];
+    if (level >= MAX_UPGRADE_LEVEL) return 0;
+    const progressionPrice = incomePerSecond * upgradeIncomeSeconds[level];
+    return Math.ceil(Math.max(upgradeCosts[branch][level], progressionPrice) / 1_000) * 1_000;
+  }
+
   function buyUpgrade(branch: UpgradeBranch) {
     const level = upgrades[branch];
     if (level >= MAX_UPGRADE_LEVEL) return;
-    const price = upgradeCosts[branch][level];
+    const price = currentUpgradePrice(branch);
 
     if (cash < price) {
       setMessage(`You need $${formatCash(price - cash)} more for that upgrade`);
@@ -1488,7 +1501,8 @@ export default function RngMachine() {
   function showAutumnBlockOpening() {
     if (autumnBlocks < 1 || autumnOpeningPhase === "shuffling") return;
     setAutumnReveal(null);
-    setAutumnShuffleIndex(0);
+    setAutumnShuffleStep(0);
+    setAutumnShuffleSequence([0]);
     setAutumnOpeningPhase("ready");
     setShowAutumnOpening(true);
   }
@@ -1497,23 +1511,28 @@ export default function RngMachine() {
     if (autumnBlocks < 1 || autumnOpeningPhase !== "ready") return;
     const winner = pickAutumnOddling();
     const winnerIndex = autumnOddlings.findIndex((entry) => entry.id === winner.id);
+    const shuffleSteps = 32;
+    const sequence = Array.from({ length: shuffleSteps }, (_, step) =>
+      step === shuffleSteps - 1
+        ? winnerIndex
+        : (step * 3 + Math.floor(randomUnit() * autumnOddlings.length)) % autumnOddlings.length,
+    );
     setAutumnBlocks((current) => current - 1);
     setAutumnOpeningPhase("shuffling");
     setAutumnReveal(null);
+    setAutumnShuffleSequence(sequence);
+    setAutumnShuffleStep(0);
     playTone(164, 0.9, 0.045, "triangle");
 
     let elapsed = 0;
-    const shuffleSteps = 28;
     for (let step = 0; step < shuffleSteps; step += 1) {
       const progress = step / (shuffleSteps - 1);
-      const delay = 58 + Math.pow(progress, 3.1) * 330;
+      const easedProgress = progress * progress * (3 - 2 * progress);
+      const delay = 72 + Math.pow(easedProgress, 3) * 390;
       elapsed += delay;
-      const displayIndex = step === shuffleSteps - 1
-        ? winnerIndex
-        : (step * 3 + Math.floor(randomUnit() * autumnOddlings.length)) % autumnOddlings.length;
       timers.current.push(window.setTimeout(() => {
-        setAutumnShuffleIndex(displayIndex);
-        playTone(270 + displayIndex * 62, 0.045, 0.012, "triangle");
+        setAutumnShuffleStep(step);
+        playTone(270 + sequence[step] * 62, 0.045, 0.012, "triangle");
       }, elapsed));
     }
 
@@ -1648,14 +1667,6 @@ export default function RngMachine() {
     }, 2_200));
   }
 
-  function enterFuseMachine() {
-    if (soundEnabledRef.current) startAudioEngine();
-    setShowRebirth(false);
-    setShowFuseMachine(true);
-    setActiveTab("fuse");
-    setGameStarted(true);
-  }
-
   function openGameTab(tab: GameTab) {
     setActiveTab(tab);
     setShowFuseMachine(tab === "fuse");
@@ -1669,7 +1680,6 @@ export default function RngMachine() {
       setTutorialStep(0);
       setShowTutorial(true);
     }
-    setShowRebirth(false);
     setShowFuseMachine(false);
     setActiveTab("roll");
     setFuseSlots([]);
@@ -1714,7 +1724,6 @@ export default function RngMachine() {
     setMutationIntro(null);
     setLuck(1);
     setRebirths((current) => current + 1);
-    setShowRebirth(false);
     setMessage("Rebirth complete — permanent power increased!");
     playTone(523, 0.25, 0.06, "triangle");
     playTone(784, 0.4, 0.055, "triangle", 0.12);
@@ -1778,6 +1787,7 @@ export default function RngMachine() {
   const currentTutorial = tutorialSteps[tutorialStep];
   const autumnRestockSeconds = Math.max(0, Math.ceil((autumnRestockAt - clockNow) / 1_000));
   const autumnRestockClock = `${Math.floor(autumnRestockSeconds / 60)}:${String(autumnRestockSeconds % 60).padStart(2, "0")}`;
+  const autumnShuffleIndex = autumnShuffleSequence[autumnShuffleStep] ?? 0;
   const autumnShuffleOddling = autumnOddlings[autumnShuffleIndex];
 
   return (
@@ -1829,45 +1839,7 @@ export default function RngMachine() {
 
             <div className={styles.introButtons}>
               <button className={styles.playButton} onClick={enterGame}>Play</button>
-              <button className={styles.fuseHomeButton} onClick={enterFuseMachine}>
-                Fuse Machine
-                <small>Combine four memes</small>
-              </button>
-              <button className={styles.rebirthButton} onClick={() => setShowRebirth((open) => !open)}>
-                Rebirth
-                <small>{canRebirth ? "Ready!" : `Level ${rebirths + 1}`}</small>
-              </button>
             </div>
-
-            {showRebirth && (
-              <div className={styles.rebirthPanel}>
-                <div>
-                  <p>Next rebirth</p>
-                  <strong>Permanent +25% income and +0.5% luck</strong>
-                </div>
-                <div className={styles.rebirthRequirements}>
-                  {rebirthCharacters.map((oddling) => {
-                    const hasCharacter = MUTATIONS.some(
-                      (mutation) => (owned[ownedKey(oddling.id, mutation)] ?? 0) > 0,
-                    );
-                    return (
-                      <div key={oddling.id} data-complete={hasCharacter}>
-                        <Image src={oddling.image} alt="" width={76} height={76} />
-                        <span>{hasCharacter ? "✓" : "○"} {oddling.name}</span>
-                      </div>
-                    );
-                  })}
-                  <div className={styles.cashRequirement} data-complete={cash >= rebirthRecipe.cash}>
-                    <strong>{cash >= rebirthRecipe.cash ? "✓" : "○"} ${formatCash(rebirthRecipe.cash)}</strong>
-                    <span>Cash required</span>
-                  </div>
-                </div>
-                <p className={styles.rebirthWarning}>Trades all cash, memes and upgrades. You restart with $60,000.</p>
-                <button disabled={!canRebirth} onClick={performRebirth}>
-                  {canRebirth ? `Rebirth to level ${rebirths + 1}` : "Requirements not met"}
-                </button>
-              </div>
-            )}
           </div>
         </section>
       )}
@@ -2300,12 +2272,61 @@ export default function RngMachine() {
                   ))}
                 </div>
                 <button onClick={() => buyUpgrade(branch)} disabled={isMaxed}>
-                  {isMaxed ? "Maxed" : `Upgrade · $${formatCash(upgradeCosts[branch][level])}`}
+                  {isMaxed ? "Maxed" : `Upgrade · $${formatCash(currentUpgradePrice(branch))}`}
                 </button>
               </article>
             );
           })}
         </div>
+        )}
+
+        {activeTab === "rebirth" && (
+          <section className={styles.rebirthTab} aria-label="Rebirth progression">
+            <div className={styles.rebirthTabHero}>
+              <span>♻</span>
+              <div>
+                <p className={styles.eyebrow}>Permanent progression</p>
+                <h2>Rebirth {rebirths + 1}</h2>
+                <p>Trade your current run for permanent power and a larger collection.</p>
+              </div>
+              <strong>{canRebirth ? "Ready to rebirth!" : "Keep grinding"}</strong>
+            </div>
+
+            <div className={styles.rebirthBenefits}>
+              <div><strong>+25%</strong><span>Permanent income</span></div>
+              <div><strong>+0.5%</strong><span>Permanent luck</span></div>
+              <div><strong>+1</strong><span>Character slot</span></div>
+              <div><strong>${formatCash(5_000_000 * (rebirths + 2))}</strong><span>Next offline vault</span></div>
+            </div>
+
+            <div className={styles.rebirthPanel}>
+              <div>
+                <p>Requirements</p>
+                <strong>Complete all three to restart stronger</strong>
+              </div>
+              <div className={styles.rebirthRequirements}>
+                {rebirthCharacters.map((oddling) => {
+                  const hasCharacter = MUTATIONS.some(
+                    (mutation) => (owned[ownedKey(oddling.id, mutation)] ?? 0) > 0,
+                  );
+                  return (
+                    <div key={oddling.id} data-complete={hasCharacter}>
+                      <Image src={oddling.image} alt="" width={88} height={88} />
+                      <span>{hasCharacter ? "✓" : "○"} {oddling.name}</span>
+                    </div>
+                  );
+                })}
+                <div className={styles.cashRequirement} data-complete={cash >= rebirthRecipe.cash}>
+                  <strong>{cash >= rebirthRecipe.cash ? "✓" : "○"} ${formatCash(rebirthRecipe.cash)}</strong>
+                  <span>Cash required</span>
+                </div>
+              </div>
+              <p className={styles.rebirthWarning}>Rebirth consumes your cash, characters and upgrades. Lucky Blocks remain safe. You restart with ${formatCash(STARTING_CASH)}.</p>
+              <button disabled={!canRebirth} onClick={performRebirth}>
+                {canRebirth ? `Rebirth to level ${rebirths + 1}` : "Requirements not met"}
+              </button>
+            </div>
+          </section>
         )}
 
         {activeTab === "shop" && (
@@ -2472,14 +2493,18 @@ export default function RngMachine() {
                 {autumnOpeningPhase === "revealed" && autumnReveal ? (
                   <Image className={styles.autumnWinnerImage} src={autumnReveal.image} alt={autumnReveal.name} width={390} height={390} priority />
                 ) : autumnOpeningPhase === "shuffling" ? (
-                  <div
-                    className={styles.autumnSilhouette}
-                    style={{
-                      "--silhouette-image": `url(${autumnShuffleOddling.image})`,
-                      "--silhouette-colour": autumnRevealColours[autumnShuffleIndex],
-                    } as React.CSSProperties}
-                    aria-label="Mystery character silhouette"
-                  />
+                  <div className={styles.autumnRollingCharacter}>
+                    <Image
+                      key={`${autumnShuffleStep}-${autumnShuffleOddling.id}`}
+                      className={styles.autumnShuffleImage}
+                      src={autumnShuffleOddling.image}
+                      alt={autumnShuffleOddling.name}
+                      width={390}
+                      height={390}
+                      priority
+                    />
+                    <i aria-hidden="true" />
+                  </div>
                 ) : (
                   <Image className={styles.openingBlockImage} src={autumnLuckyBlock.image} alt="Autumn Lucky Block" width={340} height={340} priority />
                 )}
