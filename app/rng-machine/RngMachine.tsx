@@ -132,6 +132,7 @@ const luckTokens: Record<number, LuckToken> = {
 
 const oddlings: Oddling[] = [
   { id: "trollini-gamerini", name: "Fairs Meme", image: "/characters/fairs-cutout.png", description: "The masked OK-sign legend who always knows when the roll is fair.", rarity: "Legendary", price: 10_000, income: 1_000, weight: 64 },
+  { id: "le-godly-developer-chester", name: "Le Godly Developer Chester", image: "/characters/le-godly-developer-chester.jpeg", description: "The tiny coding mastermind whose next update is always legendary.", rarity: "Legendary", price: 30_000, income: 3_000, weight: 52 },
   { id: "snoozi-mozzi", name: "Verity", image: "/characters/verity-reference.webp", description: "A simple yellow smiley with unstoppable positive energy.", rarity: "Legendary", price: 50_000, income: 5_000, weight: 42 },
 
   { id: "lava-llama", name: "67", image: "/characters/sixty-seven-cutout.png", description: "The glowing, wide-mouthed sixty-seven energy meme in its final form.", rarity: "Mythic", price: 180_000, income: 15_000, weight: 16 },
