@@ -198,6 +198,7 @@ const tutorialSteps = [
 const oddlings: Oddling[] = [
   { id: "eye-of-rah", name: "Eye of Rah", image: "/characters/eye-of-rah.png", description: "The all-seeing third eye watches every spin before it lands.", rarity: "Common", price: 3_500, income: 350, weight: 110 },
   { id: "ryanbuttlord", name: "ryanbuttlord", image: "/characters/ryanbuttlord.png", description: "The candy commander guarding a bowl of rainbow treasure.", rarity: "Common", price: 4_500, income: 450, weight: 105 },
+  { id: "anderdingus", name: "Anderdingus", image: "/characters/anderdingus.png", description: "The double-packet sweet champion who never chooses just one flavour.", rarity: "Common", price: 5_500, income: 550, weight: 100 },
   { id: "trollini-gamerini", name: "Fairs Meme", image: "/characters/fairs-cutout.png", description: "The masked OK-sign legend who always knows when the roll is fair.", rarity: "Legendary", price: 10_000, income: 1_000, weight: 64 },
   { id: "excuse-me-sir", name: "Excuse Me Sir", image: "/characters/excuse-me-sir-cutout.png", description: "That politely smug look when the reel knows it has your attention.", rarity: "Legendary", price: 11_000, income: 1_100, weight: 60 },
   { id: "oliver", name: "Oliver", image: "/characters/oliver-cutout.png", description: "The bowl-cut icon whose legendary waterproof fit never misses.", rarity: "Legendary", price: 13_000, income: 1_300, weight: 58 },
