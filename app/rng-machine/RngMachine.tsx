@@ -131,6 +131,69 @@ const luckTokens: Record<number, LuckToken> = {
   50: { id: "luck-50", kind: "luck", multiplier: 50, name: "Meme Storm Clover", clovers: 4, theme: "cosmic" },
 };
 
+const tutorialSteps = [
+  {
+    icon: "🎰",
+    title: "Welcome to Meme RNG",
+    body: "Spend cash to spin the reel and discover memes. Common characters appear often; Mythic, Godly, Secret and OG characters become increasingly difficult to find.",
+    tip: "Your starting cash is enough for several rolls.",
+  },
+  {
+    icon: "⏱",
+    title: "Buy your roll",
+    body: "When the reel stops, you have 60 seconds to collect the character. If you cannot afford it yet, wait while your active characters generate more cash—or discard it and roll again.",
+    tip: "The result screen shows its rarity, income and exact 1-in odds.",
+  },
+  {
+    icon: "💸",
+    title: "Build passive income",
+    body: "Collected characters earn cash every second. Mutations and level upgrades increase their income, and the game also awards half of that income while you are away for up to eight hours.",
+    tip: "Higher rarity usually means much stronger income.",
+  },
+  {
+    icon: "🍀",
+    title: "Chain your luck",
+    body: "A roll can land on a 2× clover. Each successful clover gives another chance to advance through 4×, 6×, 8×, 10× and 20× luck before the character roll begins.",
+    tip: "After reaching 2×, the final character will be Secret or higher.",
+  },
+  {
+    icon: "🌈",
+    title: "Find mutations",
+    body: "Some rolls become Gold, Diamond or Rainbow. Their tints appear across the entire reel and multiply that character's income by 1.25×, 1.75× or a massive 10×.",
+    tip: "Upgrade Mutation Chance to see special rolls more often.",
+  },
+  {
+    icon: "📦",
+    title: "Manage your storage",
+    body: "You begin with five character slots. Sell unwanted characters for half their purchase price, level up favourites for stronger income, and gain one extra slot with every rebirth.",
+    tip: "Duplicates and different mutations each use storage slots.",
+  },
+  {
+    icon: "⬆",
+    title: "Upgrade the machine",
+    body: "Spend earnings on the three upgrade branches: Luck improves clover chances, Speed shortens the rolling animation, and Mutation increases special mutation chances. Roll prices rise slightly as the machine improves.",
+    tip: "A fully upgraded machine costs roughly $100,000 in roll fees.",
+  },
+  {
+    icon: "⚡",
+    title: "Use events and rewards",
+    body: "Claim daily rewards, complete quests, fill the pity meter and use potions. Weekend Warp improves income and luck, while rare Meme Storms unleash 50× luck for 30 seconds.",
+    tip: "The Meme-dex records every character and mutation you discover.",
+  },
+  {
+    icon: "🧬",
+    title: "Fuse four characters",
+    body: "Open the Fuse Machine from the title screen and load four owned characters. Better materials improve the live odds, and successful fusion characters are added directly to storage.",
+    tip: "Common ingredients cannot create Secrets; premium Secret recipes can.",
+  },
+  {
+    icon: "♻",
+    title: "Rebirth for permanent power",
+    body: "Own the required pair and save enough cash to rebirth. You trade your cash, characters and upgrades for a permanent income boost, a small luck boost and another storage slot.",
+    tip: "Each rebirth is harder than the previous one. Good luck!",
+  },
+] as const;
+
 const oddlings: Oddling[] = [
   { id: "eye-of-rah", name: "Eye of Rah", image: "/characters/eye-of-rah.png", description: "The all-seeing third eye watches every spin before it lands.", rarity: "Common", price: 3_500, income: 350, weight: 110 },
   { id: "ryanbuttlord", name: "ryanbuttlord", image: "/characters/ryanbuttlord.png", description: "The candy commander guarding a bowl of rainbow treasure.", rarity: "Common", price: 4_500, income: 450, weight: 105 },
@@ -591,6 +654,9 @@ export default function RngMachine() {
   const [luck, setLuck] = useState(1);
   const [message, setMessage] = useState("Machine ready");
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [tutorialComplete, setTutorialComplete] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const timers = useRef<number[]>([]);
   const audioContext = useRef<AudioContext | null>(null);
@@ -683,6 +749,7 @@ export default function RngMachine() {
             incomePerSecond?: number;
             luckFeverUntil?: number;
             feverPreviewUsed?: boolean;
+            tutorialComplete?: boolean;
           };
           if (typeof parsed.cash === "number") setCash(parsed.cash);
           if (parsed.owned) {
@@ -715,6 +782,7 @@ export default function RngMachine() {
           if (typeof parsed.bossTickets === "number") setBossTickets(parsed.bossTickets);
           if (typeof parsed.luckFeverUntil === "number") setLuckFeverUntil(parsed.luckFeverUntil);
           if (typeof parsed.feverPreviewUsed === "boolean") setFeverPreviewUsed(parsed.feverPreviewUsed);
+          if (typeof parsed.tutorialComplete === "boolean") setTutorialComplete(parsed.tutorialComplete);
           if (parsed.savedAt && parsed.incomePerSecond && typeof parsed.cash === "number") {
             const awaySeconds = Math.min(28_800, Math.max(0, (Date.now() - parsed.savedAt) / 1_000));
             const offlineCash = Math.floor(awaySeconds * parsed.incomePerSecond * 0.5);
@@ -742,14 +810,14 @@ export default function RngMachine() {
         cash, owned, upgrades, rebirths, characterLevels, pity, stats,
         claimedQuests, lastDailyClaim, dailyStreak, mutationGuarantees,
         potions, activePotionRolls, doubleIncomeUntil, bossTickets,
-        luckFeverUntil, feverPreviewUsed,
+        luckFeverUntil, feverPreviewUsed, tutorialComplete,
         savedAt: Date.now(), incomePerSecond,
       }),
     );
   }, [activePotionRolls, bossTickets, cash, characterLevels, claimedQuests,
     dailyStreak, doubleIncomeUntil, hasLoaded, incomePerSecond, lastDailyClaim,
     feverPreviewUsed, luckFeverUntil, mutationGuarantees, owned, pity, potions,
-    rebirths, stats, upgrades]);
+    rebirths, stats, tutorialComplete, upgrades]);
 
   useEffect(() => {
     const clockTimer = window.setInterval(() => setClockNow(Date.now()), 1_000);
@@ -1369,12 +1437,34 @@ export default function RngMachine() {
 
   function enterGame() {
     if (soundEnabledRef.current) startAudioEngine();
-    if (!feverPreviewUsed) startLuckFever(true);
+    if (tutorialComplete) {
+      if (!feverPreviewUsed) startLuckFever(true);
+    } else {
+      setTutorialStep(0);
+      setShowTutorial(true);
+    }
     setShowRebirth(false);
     setShowFuseMachine(false);
     setFuseSlots([]);
     setFuseResult(null);
     setGameStarted(true);
+  }
+
+  function finishTutorial() {
+    setTutorialComplete(true);
+    setShowTutorial(false);
+    setTutorialStep(0);
+    setMessage("Tutorial complete — machine ready!");
+    if (!feverPreviewUsed) startLuckFever(true);
+  }
+
+  function advanceTutorial() {
+    if (tutorialStep >= tutorialSteps.length - 1) {
+      finishTutorial();
+      return;
+    }
+    setTutorialStep((current) => current + 1);
+    playTone(420 + tutorialStep * 28, 0.08, 0.018, "sine");
   }
 
   function performRebirth() {
@@ -1425,6 +1515,9 @@ export default function RngMachine() {
     setBossTickets(0);
     setLuckFeverUntil(0);
     setFeverPreviewUsed(false);
+    setTutorialComplete(false);
+    setTutorialStep(0);
+    setShowTutorial(true);
     setResult(null);
     setResultDeadline(null);
     setActiveMutation("normal");
@@ -1448,6 +1541,7 @@ export default function RngMachine() {
     { name: "Meme Millionaire", unlocked: stats.totalEarned >= 1_000_000_000, detail: "Earned $1 billion" },
   ];
   const currentDayKey = clockNow > 0 ? new Date(clockNow).toISOString().slice(0, 10) : "";
+  const currentTutorial = tutorialSteps[tutorialStep];
 
   return (
     <main
@@ -1538,6 +1632,32 @@ export default function RngMachine() {
             )}
           </div>
         </section>
+      )}
+      {gameStarted && showTutorial && !showFuseMachine && (
+        <div className={styles.tutorialOverlay} role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+          <section className={styles.tutorialCard}>
+            <button className={styles.tutorialSkip} onClick={finishTutorial}>Skip tutorial</button>
+            <div className={styles.tutorialCounter}>Tip {tutorialStep + 1} of {tutorialSteps.length}</div>
+            <div className={styles.tutorialIcon} aria-hidden="true">{currentTutorial.icon}</div>
+            <div className={styles.tutorialCopy} aria-live="polite">
+              <p>Meme RNG Academy</p>
+              <h2 id="tutorial-title">{currentTutorial.title}</h2>
+              <span>{currentTutorial.body}</span>
+              <strong>{currentTutorial.tip}</strong>
+            </div>
+            <div className={styles.tutorialProgress} aria-label={`Tutorial step ${tutorialStep + 1} of ${tutorialSteps.length}`}>
+              {tutorialSteps.map((step, index) => (
+                <i key={step.title} data-active={index <= tutorialStep} />
+              ))}
+            </div>
+            <div className={styles.tutorialActions}>
+              <button disabled={tutorialStep === 0} onClick={() => setTutorialStep((current) => Math.max(0, current - 1))}>Back</button>
+              <button onClick={advanceTutorial}>
+                {tutorialStep === tutorialSteps.length - 1 ? "Start rolling" : "Next tip"}
+              </button>
+            </div>
+          </section>
+        </div>
       )}
       {gameStarted && showFuseMachine && (
         <section className={styles.fuseScreen} aria-label="Fuse Machine">

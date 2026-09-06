@@ -1209,6 +1209,123 @@
 .dailyTrack b { font-size: 0.6rem; }
 .dailyTrack small { margin-top: 3px; font-size: 0.5rem; }
 
+.tutorialOverlay {
+  position: fixed;
+  z-index: 110;
+  inset: 0;
+  display: grid;
+  overflow: auto;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(109, 255, 213, 0.2), transparent 34%),
+    rgba(7, 5, 23, 0.9);
+  backdrop-filter: blur(16px);
+}
+
+.tutorialCard {
+  position: relative;
+  display: grid;
+  width: min(100%, 680px);
+  max-height: 92svh;
+  overflow: auto;
+  grid-template-columns: 108px 1fr;
+  align-items: center;
+  gap: 14px 20px;
+  padding: 25px;
+  border: 2px solid rgba(118, 255, 217, 0.55);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 12% 32%, rgba(150, 102, 255, 0.2), transparent 30%),
+    linear-gradient(145deg, #25163c, #102e3b 70%, #151329);
+  box-shadow: 0 32px 110px rgba(0, 0, 0, 0.65), 0 0 55px rgba(83, 241, 207, 0.18);
+}
+
+.tutorialSkip {
+  position: absolute;
+  top: 13px;
+  right: 14px;
+  padding: 7px 10px;
+  border: 1px solid rgba(197, 182, 218, 0.32);
+  border-radius: 999px;
+  background: rgba(10, 9, 22, 0.58);
+  color: #b9acc9;
+  cursor: pointer;
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+
+.tutorialCounter {
+  grid-column: 1 / -1;
+  color: #78f4d1;
+  font-size: 0.62rem;
+  font-weight: 950;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.tutorialIcon {
+  display: grid;
+  width: 108px;
+  height: 108px;
+  place-items: center;
+  border: 1px solid rgba(142, 111, 255, 0.5);
+  border-radius: 30px;
+  background: linear-gradient(145deg, rgba(137, 91, 255, 0.22), rgba(64, 237, 205, 0.12));
+  font-size: 3.6rem;
+  box-shadow: inset 0 0 28px rgba(255, 255, 255, 0.05), 0 0 30px rgba(129, 91, 255, 0.16);
+}
+
+.tutorialCopy { display: grid; align-content: center; }
+.tutorialCopy p { margin: 0 0 3px; color: #a78cff; font-size: 0.6rem; font-weight: 950; letter-spacing: 0.14em; text-transform: uppercase; }
+.tutorialCopy h2 { margin: 0; color: #fff; font-size: 1.7rem; line-height: 1.05; }
+.tutorialCopy span { margin-top: 9px; color: #d0c8db; font-size: 0.82rem; font-weight: 700; line-height: 1.45; }
+.tutorialCopy strong { margin-top: 10px; color: #8affe0; font-size: 0.7rem; }
+
+.tutorialProgress {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: 5px;
+}
+
+.tutorialProgress i {
+  height: 5px;
+  flex: 1;
+  border-radius: 999px;
+  background: #3b3049;
+}
+
+.tutorialProgress i[data-active="true"] {
+  background: linear-gradient(90deg, #9a72ff, #65f0cb);
+  box-shadow: 0 0 8px rgba(102, 240, 204, 0.32);
+}
+
+.tutorialActions {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 9px;
+}
+
+.tutorialActions button {
+  min-height: 48px;
+  border: 1px solid #50425f;
+  border-radius: 12px;
+  background: #211a2b;
+  color: #c9bdd6;
+  cursor: pointer;
+  font-weight: 950;
+}
+
+.tutorialActions button:last-child {
+  border: 0;
+  background: linear-gradient(100deg, #9970ff, #4fe4c3);
+  color: #100a20;
+  box-shadow: 0 7px 22px rgba(85, 232, 198, 0.22);
+}
+
+.tutorialActions button:disabled { opacity: 0.28; cursor: default; }
+
 .indexOverlay { position: fixed; z-index: 80; inset: 0; display: grid; overflow: auto; place-items: center; padding: 24px; background: rgba(5, 7, 20, 0.88); backdrop-filter: blur(18px); }
 .indexModal { width: min(100%, 1050px); max-height: 88svh; overflow: auto; padding: 22px; border: 1px solid rgba(176, 157, 224, 0.45); border-radius: 24px; background: linear-gradient(145deg, #201832, #0d2332); box-shadow: 0 30px 100px rgba(0, 0, 0, 0.52); }
 .indexModal > header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
@@ -1580,6 +1697,27 @@
   .rebirthSummary { margin-bottom: 7px; padding: 5px 8px; }
   .introButtons { gap: 6px; }
   .introButtons button { min-height: 44px; padding: 6px 8px; }
+
+  .tutorialOverlay { padding: 6px max(9px, env(safe-area-inset-right)) 6px max(9px, env(safe-area-inset-left)); }
+  .tutorialCard {
+    width: min(100%, 720px);
+    max-height: calc(100svh - 12px);
+    grid-template-columns: 72px 1fr;
+    gap: 7px 13px;
+    padding: 11px 16px;
+    border-radius: 16px;
+  }
+  .tutorialSkip { top: 7px; right: 9px; padding: 5px 8px; font-size: 0.48rem; }
+  .tutorialCounter { font-size: 0.5rem; }
+  .tutorialIcon { width: 72px; height: 72px; border-radius: 18px; font-size: 2.35rem; }
+  .tutorialCopy p { font-size: 0.47rem; }
+  .tutorialCopy h2 { font-size: 1.15rem; }
+  .tutorialCopy span { margin-top: 4px; font-size: 0.63rem; line-height: 1.25; }
+  .tutorialCopy strong { margin-top: 5px; font-size: 0.54rem; }
+  .tutorialProgress { gap: 3px; }
+  .tutorialProgress i { height: 3px; }
+  .tutorialActions { gap: 6px; }
+  .tutorialActions button { min-height: 37px; border-radius: 9px; font-size: 0.62rem; }
 }
 
 @media (orientation: portrait) and (max-width: 900px) and (pointer: coarse) {
