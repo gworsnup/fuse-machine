@@ -4,14 +4,14 @@ import "./globals.css";
 import PwaRegistration from "./PwaRegistration";
 
 export const metadata: Metadata = {
-  title: "Meme RNG",
+  title: "Roll a Meme",
   description: "Roll rare memes, build passive income, fuse characters and rebirth.",
-  applicationName: "Meme RNG",
+  applicationName: "Roll a Meme",
   manifest: "/meme-rng.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Meme RNG",
+    title: "Roll a Meme",
   },
   icons: {
     icon: [
@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0436",
+  themeColor: "#a9432f",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

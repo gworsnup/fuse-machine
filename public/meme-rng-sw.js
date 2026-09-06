@@ -1,4 +1,4 @@
-const CACHE_NAME = "meme-rng-v2";
+const CACHE_NAME = "roll-a-meme-autumn-v1";
 const GAME_URL = "/";
 const CORE_ASSETS = [
   GAME_URL,
@@ -17,7 +17,7 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((key) => key.startsWith("meme-rng-") && key !== CACHE_NAME)
+          .filter((key) => (key.startsWith("meme-rng-") || key.startsWith("roll-a-meme-")) && key !== CACHE_NAME)
           .map((key) => caches.delete(key)),
       ),
     ),

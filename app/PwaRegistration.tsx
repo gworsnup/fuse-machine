@@ -15,7 +15,7 @@ export default function PwaRegistration() {
 
     const register = () => {
       void navigator.serviceWorker.register("/meme-rng-sw.js", { scope: "/" }).catch((error) => {
-        console.warn("[Meme RNG] Service worker registration failed", error);
+        console.warn("[Roll a Meme] Service worker registration failed", error);
       });
     };
 

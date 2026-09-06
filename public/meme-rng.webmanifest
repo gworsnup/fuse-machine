@@ -1,6 +1,6 @@
 {
-  "name": "Meme RNG",
-  "short_name": "Meme RNG",
+  "name": "Roll a Meme",
+  "short_name": "Roll a Meme",
   "description": "Spin for rare memes, build passive income, fuse characters and rebirth.",
   "id": "/",
   "start_url": "/?source=pwa",
@@ -8,8 +8,8 @@
   "display": "standalone",
   "display_override": ["fullscreen", "standalone"],
   "orientation": "landscape",
-  "background_color": "#0a0436",
-  "theme_color": "#0a0436",
+  "background_color": "#6f2630",
+  "theme_color": "#a9432f",
   "lang": "en-GB",
   "categories": ["games", "entertainment"],
   "icons": [

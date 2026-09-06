@@ -56,7 +56,14 @@ type LuckToken = {
   theme: CloverTheme;
 };
 
-type ReelEntry = Oddling | LuckToken;
+type LuckyBlockToken = {
+  id: "autumn-lucky-block";
+  kind: "lucky-block";
+  name: string;
+  image: string;
+};
+
+type ReelEntry = Oddling | LuckToken | LuckyBlockToken;
 
 type CharacterPerformance = {
   line: string;
@@ -73,6 +80,9 @@ const MAX_UPGRADE_LEVEL = 5;
 const LUCK_LEVELS = [1, 2, 4, 6, 8, 10, 20] as const;
 const MUTATIONS: Mutation[] = ["normal", "gold", "diamond", "rainbow"];
 const PITY_MAX = 40;
+const AUTUMN_BLOCK_ROLL_CHANCE = 0.05;
+const AUTUMN_BLOCK_PRICE = 25_000_000;
+const AUTUMN_RESTOCK_MS = 5 * 60 * 1_000;
 const GAME_TABS: readonly [GameTab, string, string][] = [
   ["roll", "🎰", "Roll"],
   ["collection", "🃏", "Collection"],
@@ -87,6 +97,13 @@ const potionShop: Record<PotionKind, { name: string; price: number; detail: stri
   mutation: { name: "Mutation Mix", price: 500_000, detail: "+15% mutation · 5 rolls" },
   turbo: { name: "Turbo Pop", price: 150_000, detail: "+20% reel speed · 5 rolls" },
   double: { name: "Income Juice", price: 1_000_000, detail: "2× income · 5 minutes" },
+};
+
+const autumnLuckyBlock: LuckyBlockToken = {
+  id: "autumn-lucky-block",
+  kind: "lucky-block",
+  name: "Autumn Lucky Block",
+  image: "/items/autumn-lucky-block.png",
 };
 
 const rebirthRecipes = [
@@ -144,9 +161,15 @@ const luckTokens: Record<number, LuckToken> = {
 const tutorialSteps = [
   {
     icon: "🎰",
-    title: "Welcome to Meme RNG",
+    title: "Welcome to Roll a Meme",
     body: "Spend cash to spin the reel and discover memes. Common characters appear often; Mythic, Godly, Secret and OG characters become increasingly difficult to find.",
     tip: "Your starting cash is enough for several rolls.",
+  },
+  {
+    icon: "🍁",
+    title: "Autumn Lucky Blocks",
+    body: "Every normal spin has a 5% chance to land an Autumn Lucky Block. It goes straight into your separate block storage, so it never takes a character slot.",
+    tip: "The Potions tab has your storage, a five-minute shop restock and the harvest pedestal opening.",
   },
   {
     icon: "⏱",
@@ -251,7 +274,17 @@ const fusionOddlings: Oddling[] = [
   { id: "origin-phoenix", name: "Lord Kirk Meme", image: "/characters/lord-kirk-cutout.png", description: "The angelic Lord Kirk watches over the rarest fusion chamber.", rarity: "OG", price: 14_000_000_000, income: 500_000_000, weight: 0 },
 ];
 
-const allOddlings = [...oddlings, ...fusionOddlings];
+const autumnOddlings: Oddling[] = [
+  { id: "pumpkin-spice-sigma", name: "Pumpkin Spice Sigma", image: "/characters/autumn/pumpkin-spice-sigma.png", description: "The strongest pumpkin at the patch never skips spice day.", rarity: "Godly", price: 7_500_000, income: 750_000, weight: 60 },
+  { id: "acorn-capybara", name: "Acorn Capybara", image: "/characters/autumn/acorn-capybara.png", description: "Unbothered, cosy and carrying the calm of an entire autumn forest.", rarity: "Secret", price: 30_000_000, income: 3_000_000, weight: 20 },
+  { id: "rizzler-scarecrow", name: "Rizzler Scarecrow", image: "/characters/autumn/rizzler-scarecrow.png", description: "Protects the harvest using nothing but straw and unstoppable confidence.", rarity: "Secret", price: 80_000_000, income: 8_000_000, weight: 15 },
+  { id: "harvest-moon-werewolf", name: "Harvest Moon Werewolf", image: "/characters/autumn/harvest-moon-werewolf.png", description: "When the harvest moon rises, the whole forest starts earning.", rarity: "Secret", price: 800_000_000, income: 80_000_000, weight: 4.5 },
+  { id: "golden-turkey-king", name: "Golden Turkey King", image: "/characters/autumn/golden-turkey-king.png", description: "The crown jewel of the Autumn Update and ruler of the golden harvest.", rarity: "OG", price: 1_450_000_000, income: 145_000_000, weight: 0.5 },
+];
+
+const autumnRevealColours = ["#ff9d24", "#d7652b", "#9d4edd", "#e63946", "#ffd43b"];
+
+const allOddlings = [...oddlings, ...fusionOddlings, ...autumnOddlings];
 
 const characterPerformances: Record<string, CharacterPerformance> = {
   "trollini-gamerini": { line: "Heh-heh… GG. Too easy!", pitches: [180, 145, 190], wave: "square", voicePitch: 0.72, voiceRate: 1.08 },
@@ -581,7 +614,22 @@ function isLuckToken(entry: ReelEntry): entry is LuckToken {
   return "kind" in entry && entry.kind === "luck";
 }
 
+function isLuckyBlock(entry: ReelEntry): entry is LuckyBlockToken {
+  return "kind" in entry && entry.kind === "lucky-block";
+}
+
+function pickAutumnOddling() {
+  const total = autumnOddlings.reduce((sum, oddling) => sum + oddling.weight, 0);
+  let ticket = randomUnit() * total;
+  for (const oddling of autumnOddlings) {
+    ticket -= oddling.weight;
+    if (ticket <= 0) return oddling;
+  }
+  return autumnOddlings[0];
+}
+
 function randomReelEntry(visibleLuckLevel: number): ReelEntry {
+  if (Math.random() < 0.05) return autumnLuckyBlock;
   if (Math.random() < 0.14) {
     return luckTokens[visibleLuckLevel];
   }
@@ -678,6 +726,14 @@ export default function RngMachine() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [autumnBlocks, setAutumnBlocks] = useState(0);
+  const [autumnShopStock, setAutumnShopStock] = useState(0);
+  const [autumnRestockAt, setAutumnRestockAt] = useState(0);
+  const [pendingAutumnRewards, setPendingAutumnRewards] = useState<string[]>([]);
+  const [showAutumnOpening, setShowAutumnOpening] = useState(false);
+  const [autumnOpeningPhase, setAutumnOpeningPhase] = useState<"ready" | "shuffling" | "revealed">("ready");
+  const [autumnShuffleIndex, setAutumnShuffleIndex] = useState(0);
+  const [autumnReveal, setAutumnReveal] = useState<Oddling | null>(null);
   const timers = useRef<number[]>([]);
   const audioContext = useRef<AudioContext | null>(null);
   const musicGain = useRef<GainNode | null>(null);
@@ -770,6 +826,10 @@ export default function RngMachine() {
             luckFeverUntil?: number;
             feverPreviewUsed?: boolean;
             tutorialComplete?: boolean;
+            autumnBlocks?: number;
+            autumnShopStock?: number;
+            autumnRestockAt?: number;
+            pendingAutumnRewards?: string[];
           };
           if (typeof parsed.cash === "number") setCash(parsed.cash);
           if (parsed.owned) {
@@ -803,6 +863,15 @@ export default function RngMachine() {
           if (typeof parsed.luckFeverUntil === "number") setLuckFeverUntil(parsed.luckFeverUntil);
           if (typeof parsed.feverPreviewUsed === "boolean") setFeverPreviewUsed(parsed.feverPreviewUsed);
           if (typeof parsed.tutorialComplete === "boolean") setTutorialComplete(parsed.tutorialComplete);
+          if (typeof parsed.autumnBlocks === "number") setAutumnBlocks(parsed.autumnBlocks);
+          if (Array.isArray(parsed.pendingAutumnRewards)) setPendingAutumnRewards(parsed.pendingAutumnRewards);
+          if (parsed.autumnRestockAt && parsed.autumnRestockAt > Date.now()) {
+            setAutumnShopStock(parsed.autumnShopStock ?? 3);
+            setAutumnRestockAt(parsed.autumnRestockAt);
+          } else {
+            setAutumnShopStock(3 + Math.floor(randomUnit() * 3));
+            setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
+          }
           if (parsed.savedAt && parsed.incomePerSecond && typeof parsed.cash === "number") {
             const awaySeconds = Math.min(28_800, Math.max(0, (Date.now() - parsed.savedAt) / 1_000));
             const offlineCash = Math.floor(awaySeconds * parsed.incomePerSecond * 0.5);
@@ -814,7 +883,12 @@ export default function RngMachine() {
           }
         } catch {
           window.localStorage.removeItem("oddling-machine-save-v3");
+          setAutumnShopStock(3 + Math.floor(randomUnit() * 3));
+          setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
         }
+      } else {
+        setAutumnShopStock(3 + Math.floor(randomUnit() * 3));
+        setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
       }
       setHasLoaded(true);
     }, 0);
@@ -831,18 +905,30 @@ export default function RngMachine() {
         claimedQuests, lastDailyClaim, dailyStreak, mutationGuarantees,
         potions, activePotionRolls, doubleIncomeUntil, bossTickets,
         luckFeverUntil, feverPreviewUsed, tutorialComplete,
+        autumnBlocks, autumnShopStock, autumnRestockAt, pendingAutumnRewards,
         savedAt: Date.now(), incomePerSecond,
       }),
     );
   }, [activePotionRolls, bossTickets, cash, characterLevels, claimedQuests,
     dailyStreak, doubleIncomeUntil, hasLoaded, incomePerSecond, lastDailyClaim,
     feverPreviewUsed, luckFeverUntil, mutationGuarantees, owned, pity, potions,
-    rebirths, stats, tutorialComplete, upgrades]);
+    rebirths, stats, tutorialComplete, upgrades, autumnBlocks, autumnShopStock,
+    autumnRestockAt, pendingAutumnRewards]);
 
   useEffect(() => {
     const clockTimer = window.setInterval(() => setClockNow(Date.now()), 1_000);
     return () => window.clearInterval(clockTimer);
   }, []);
+
+  useEffect(() => {
+    if (!hasLoaded || autumnRestockAt === 0 || clockNow < autumnRestockAt) return;
+    const restockTimer = window.setTimeout(() => {
+      setAutumnShopStock(3 + Math.floor(randomUnit() * 3));
+      setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
+      setMessage("Autumn Lucky Blocks have restocked!");
+    }, 0);
+    return () => window.clearTimeout(restockTimer);
+  }, [autumnRestockAt, clockNow, hasLoaded]);
 
   useEffect(() => {
     const incomeTimer = window.setInterval(() => {
@@ -1097,6 +1183,7 @@ export default function RngMachine() {
     setIsRolling(true);
     setLuck(1);
     setMessage("Scanning the Memeverse…");
+    const wonAutumnBlock = !bossRoll && randomUnit() < AUTUMN_BLOCK_ROLL_CHANCE;
 
     const feverTriggered = !luckFeverActive && randomUnit() < 1 / 750;
     const feverForThisRoll = luckFeverActive || feverTriggered;
@@ -1124,7 +1211,7 @@ export default function RngMachine() {
       mutationGuarantees > 0,
     );
     if (rollSpecial === "golden" && rollMutation === "normal") rollMutation = "gold";
-    if (mutationGuarantees > 0) setMutationGuarantees((current) => current - 1);
+    if (!wonAutumnBlock && mutationGuarantees > 0) setMutationGuarantees((current) => current - 1);
     const luckChance = Math.min(
       0.45,
       getLuckChance(upgrades, rebirths) +
@@ -1132,18 +1219,17 @@ export default function RngMachine() {
       (hasQuantumAbility ? 0.02 : 0) +
       (weekendEventActive ? 0.01 : 0),
     );
-    const chain = bossRoll ? [1, 20] : feverForThisRoll ? [1, 50] : buildLuckChain(luckChance);
+    const chain = wonAutumnBlock ? [1] : bossRoll ? [1, 20] : feverForThisRoll ? [1, 50] : buildLuckChain(luckChance);
     const finalLuck = chain.at(-1) ?? 1;
     const winner = pickOddling(finalLuck, pity, bossRoll);
     const winnerPosition = 22;
-    const phases: ReelEntry[] = [
-      ...chain.slice(1).map((boost) => luckTokens[boost]),
-      winner,
-    ];
-    let phaseStart = rollMutation === "normal" ? 0 : 1_150;
+    const phases: ReelEntry[] = wonAutumnBlock
+      ? [autumnLuckyBlock]
+      : [...chain.slice(1).map((boost) => luckTokens[boost]), winner];
+    let phaseStart = wonAutumnBlock || rollMutation === "normal" ? 0 : 1_150;
 
-    setActiveMutation(rollMutation);
-    if (rollMutation !== "normal") {
+    setActiveMutation(wonAutumnBlock ? "normal" : rollMutation);
+    if (!wonAutumnBlock && rollMutation !== "normal") {
       setMutationIntro(rollMutation);
       setMessage(`${rollMutation} mutation detected`);
       playMutationSound(rollMutation);
@@ -1153,13 +1239,15 @@ export default function RngMachine() {
     }
 
     phases.forEach((phaseWinner, phaseIndex) => {
-      const baseDuration = isLuckToken(phaseWinner) ? 2_800 : 3_400;
+      const baseDuration = isLuckToken(phaseWinner) ? 2_800 : isLuckyBlock(phaseWinner) ? 3_000 : 3_400;
       const phaseDuration = Math.round(
         baseDuration * Math.pow(0.92, upgrades.speed) *
         (activePotionRolls.turbo > 0 ? 0.8 : 1),
       );
       const visibleLuckLevel = isLuckToken(phaseWinner)
         ? phaseWinner.multiplier
+        : isLuckyBlock(phaseWinner)
+          ? 2
         : finalLuck === 50
           ? 50
           : LUCK_LEVELS[Math.min(phaseIndex + 1, LUCK_LEVELS.length - 1)];
@@ -1191,6 +1279,15 @@ export default function RngMachine() {
             playBoostSound(phaseWinner.multiplier);
             setLuck(phaseWinner.multiplier);
             setMessage(`${phaseWinner.multiplier}× LUCK — SPIN AGAIN!`);
+          } else if (isLuckyBlock(phaseWinner)) {
+            setAutumnBlocks((current) => current + 1);
+            setIsRolling(false);
+            setSpecialEvent(null);
+            setStats((current) => ({ ...current, totalRolls: current.totalRolls + 1 }));
+            setMessage("Autumn Lucky Block sent to storage!");
+            playTone(392, 0.2, 0.05, "triangle");
+            playTone(659, 0.35, 0.05, "sine", 0.1);
+            playTone(988, 0.5, 0.04, "sine", 0.22);
           } else {
             playRevealSound(phaseWinner.rarity);
             playCharacterPerformance(phaseWinner);
@@ -1369,6 +1466,88 @@ export default function RngMachine() {
       setActivePotionRolls((current) => ({ ...current, [kind]: current[kind] + 5 }));
     }
     setMessage(`${potionShop[kind].name} activated!`);
+  }
+
+  function buyAutumnBlock() {
+    if (autumnShopStock < 1) {
+      setMessage("The Autumn Lucky Block shelf is sold out");
+      return;
+    }
+    if (cash < AUTUMN_BLOCK_PRICE) {
+      setMessage(`You need $${formatCash(AUTUMN_BLOCK_PRICE - cash)} more`);
+      return;
+    }
+    setCash((current) => current - AUTUMN_BLOCK_PRICE);
+    setAutumnShopStock((current) => current - 1);
+    setAutumnBlocks((current) => current + 1);
+    setMessage("Autumn Lucky Block added to storage!");
+    playTone(523, 0.18, 0.04, "triangle");
+    playTone(784, 0.3, 0.035, "sine", 0.1);
+  }
+
+  function showAutumnBlockOpening() {
+    if (autumnBlocks < 1 || autumnOpeningPhase === "shuffling") return;
+    setAutumnReveal(null);
+    setAutumnShuffleIndex(0);
+    setAutumnOpeningPhase("ready");
+    setShowAutumnOpening(true);
+  }
+
+  function beginAutumnBlockOpening() {
+    if (autumnBlocks < 1 || autumnOpeningPhase !== "ready") return;
+    const winner = pickAutumnOddling();
+    const winnerIndex = autumnOddlings.findIndex((entry) => entry.id === winner.id);
+    setAutumnBlocks((current) => current - 1);
+    setAutumnOpeningPhase("shuffling");
+    setAutumnReveal(null);
+    playTone(164, 0.9, 0.045, "triangle");
+
+    let elapsed = 0;
+    const shuffleSteps = 28;
+    for (let step = 0; step < shuffleSteps; step += 1) {
+      const progress = step / (shuffleSteps - 1);
+      const delay = 58 + Math.pow(progress, 3.1) * 330;
+      elapsed += delay;
+      const displayIndex = step === shuffleSteps - 1
+        ? winnerIndex
+        : (step * 3 + Math.floor(randomUnit() * autumnOddlings.length)) % autumnOddlings.length;
+      timers.current.push(window.setTimeout(() => {
+        setAutumnShuffleIndex(displayIndex);
+        playTone(270 + displayIndex * 62, 0.045, 0.012, "triangle");
+      }, elapsed));
+    }
+
+    timers.current.push(window.setTimeout(() => {
+      setAutumnReveal(winner);
+      setAutumnOpeningPhase("revealed");
+      if (ownedTotal < maxCharacterSlots) {
+        setOwned((current) => ({
+          ...current,
+          [ownedKey(winner.id, "normal")]: (current[ownedKey(winner.id, "normal")] ?? 0) + 1,
+        }));
+        setMessage(`${winner.name} joined your collection!`);
+      } else {
+        setPendingAutumnRewards((current) => [...current, winner.id]);
+        setMessage(`${winner.name} is waiting in your claim area`);
+      }
+      playRevealSound(winner.rarity);
+    }, elapsed + 420));
+  }
+
+  function claimPendingAutumnRewards() {
+    const availableSlots = Math.max(0, maxCharacterSlots - ownedTotal);
+    if (availableSlots === 0 || pendingAutumnRewards.length === 0) return;
+    const claiming = pendingAutumnRewards.slice(0, availableSlots);
+    setOwned((current) => {
+      const next = { ...current };
+      claiming.forEach((id) => {
+        const key = ownedKey(id, "normal");
+        next[key] = (next[key] ?? 0) + 1;
+      });
+      return next;
+    });
+    setPendingAutumnRewards((current) => current.slice(claiming.length));
+    setMessage(`${claiming.length} Autumn reward${claiming.length === 1 ? "" : "s"} claimed!`);
   }
 
   function claimDailyReward() {
@@ -1566,6 +1745,13 @@ export default function RngMachine() {
     setTutorialComplete(false);
     setTutorialStep(0);
     setShowTutorial(true);
+    setAutumnBlocks(0);
+    setAutumnShopStock(3 + Math.floor(randomUnit() * 3));
+    setAutumnRestockAt(Date.now() + AUTUMN_RESTOCK_MS);
+    setPendingAutumnRewards([]);
+    setShowAutumnOpening(false);
+    setAutumnOpeningPhase("ready");
+    setAutumnReveal(null);
     setResult(null);
     setResultDeadline(null);
     setActiveMutation("normal");
@@ -1590,6 +1776,9 @@ export default function RngMachine() {
   ];
   const currentDayKey = clockNow > 0 ? new Date(clockNow).toISOString().slice(0, 10) : "";
   const currentTutorial = tutorialSteps[tutorialStep];
+  const autumnRestockSeconds = Math.max(0, Math.ceil((autumnRestockAt - clockNow) / 1_000));
+  const autumnRestockClock = `${Math.floor(autumnRestockSeconds / 60)}:${String(autumnRestockSeconds % 60).padStart(2, "0")}`;
+  const autumnShuffleOddling = autumnOddlings[autumnShuffleIndex];
 
   return (
     <main
@@ -1601,10 +1790,10 @@ export default function RngMachine() {
       <aside className={styles.rotatePrompt} aria-label="Landscape mode required">
         <span aria-hidden="true">↻</span>
         <strong>Rotate your phone</strong>
-        <p>Meme RNG is built to play in landscape.</p>
+        <p>Roll a Meme is built to play in landscape.</p>
       </aside>
       <div className={styles.skySprites} aria-hidden="true">
-        <i>✦</i><i>◆</i><i>✧</i><i>●</i><i>★</i><i>◇</i><i>✦</i><i>●</i>
+        <i>🍁</i><i>🍂</i><i>🌰</i><i>🍃</i><i>🍁</i><i>🍂</i><i>🌰</i><i>🍃</i>
       </div>
       {luckFeverActive && (
         <div className={styles.luckFeverBanner}>
@@ -1614,11 +1803,11 @@ export default function RngMachine() {
         </div>
       )}
       {!gameStarted && (
-        <section className={styles.introScreen} aria-label="Meme RNG start screen">
+        <section className={styles.introScreen} aria-label="Roll a Meme start screen">
           <div className={styles.introCard}>
             <p className={styles.introEyebrow}>Enter the Memeverse</p>
-            <h1 className={styles.introTitle} aria-label="Meme RNG">
-              {"Meme RNG".split("").map((letter, index) => (
+            <h1 className={styles.introTitle} aria-label="Roll a Meme">
+              {"Roll a Meme".split("").map((letter, index) => (
                 <span
                   aria-hidden="true"
                   key={`${letter}-${index}`}
@@ -1628,6 +1817,7 @@ export default function RngMachine() {
                 </span>
               ))}
             </h1>
+            <p className={styles.autumnUpdateLabel}>🍁 Autumn Update 🍂</p>
             <p className={styles.introTagline}>Roll memes. Get rich. Rule the Memeverse.</p>
 
             <div className={styles.rebirthSummary}>
@@ -1688,7 +1878,7 @@ export default function RngMachine() {
             <div className={styles.tutorialCounter}>Tip {tutorialStep + 1} of {tutorialSteps.length}</div>
             <div className={styles.tutorialIcon} aria-hidden="true">{currentTutorial.icon}</div>
             <div className={styles.tutorialCopy} aria-live="polite">
-              <p>Meme RNG Academy</p>
+              <p>Roll a Meme Academy</p>
               <h2 id="tutorial-title">{currentTutorial.title}</h2>
               <span>{currentTutorial.body}</span>
               <strong>{currentTutorial.tip}</strong>
@@ -1782,15 +1972,16 @@ export default function RngMachine() {
                   </article>
                 );
               })}
-            </div> : <p className={styles.fuseHelp}>Your storage is empty. Play Meme RNG and collect at least four characters first.</p>}
+            </div> : <p className={styles.fuseHelp}>Your storage is empty. Play Roll a Meme and collect at least four characters first.</p>}
           </section>
         </section>
       )}
       <section className={styles.game} aria-labelledby="machine-title">
         <header className={styles.header}>
           <div>
-            <p className={styles.eyebrow}>Meme RNG Arcade · Rebirth {rebirths}</p>
-            <h1 id="machine-title">Meme RNG</h1>
+            <p className={styles.eyebrow}>Autumn Arcade · Rebirth {rebirths}</p>
+            <h1 id="machine-title">Roll a Meme</h1>
+            <small className={styles.headerUpdateLabel}>Autumn Update</small>
           </div>
           <div className={styles.wallet}>
             <span>Balance</span>
@@ -1809,7 +2000,7 @@ export default function RngMachine() {
           <button
             className={styles.menuButton}
             onClick={() => { setShowFuseMachine(false); setActiveTab("roll"); setGameStarted(false); }}
-            aria-label="Return to the Meme RNG title screen"
+            aria-label="Return to the Roll a Meme title screen"
           >
             <span aria-hidden="true">↩</span>
             Menu
@@ -1918,10 +2109,10 @@ export default function RngMachine() {
                     {reelItems.map((entry, index) => (
                       <article
                         className={styles.reelCard}
-                        data-rarity={isLuckToken(entry) ? "Luck" : entry.rarity}
+                        data-rarity={isLuckToken(entry) ? "Luck" : isLuckyBlock(entry) ? "AutumnBlock" : entry.rarity}
                         data-luck-theme={isLuckToken(entry) ? entry.theme : undefined}
                         data-mutation={
-                          !isLuckToken(entry) && activeMutation !== "normal"
+                          !isLuckToken(entry) && !isLuckyBlock(entry) && activeMutation !== "normal"
                             ? activeMutation
                             : undefined
                         }
@@ -1938,9 +2129,9 @@ export default function RngMachine() {
                             priority={index < 4}
                           />
                         )}
-                        <span>{isLuckToken(entry) ? `${entry.multiplier}× Luck` : entry.rarity}</span>
+                        <span>{isLuckToken(entry) ? `${entry.multiplier}× Luck` : isLuckyBlock(entry) ? "5% Event Drop" : entry.rarity}</span>
                         <strong>{entry.name}</strong>
-                        {!isLuckToken(entry) && (
+                        {!isLuckToken(entry) && !isLuckyBlock(entry) && (
                           <small className={styles.reelIncome}>
                             ${formatCash(entry.income * mutationMultipliers[activeMutation])}/sec
                           </small>
@@ -2117,8 +2308,57 @@ export default function RngMachine() {
         </div>
         )}
 
+        {activeTab === "shop" && (
+          <section className={styles.autumnShop} aria-label="Autumn Lucky Block shop and storage">
+            <article className={styles.autumnBlockStorage}>
+              <div className={styles.autumnBlockArt}>
+                <Image src={autumnLuckyBlock.image} alt="Autumn Lucky Block" width={240} height={240} priority />
+                <span>5% reel chance</span>
+              </div>
+              <div>
+                <p className={styles.eyebrow}>Lucky Block Storage</p>
+                <h2>Autumn Lucky Blocks</h2>
+                <p>Open one on the harvest pedestal to discover an Autumn Update character.</p>
+                <strong className={styles.blockCount}>Stored ×{autumnBlocks}</strong>
+                <button className={styles.openBlockButton} disabled={autumnBlocks < 1} onClick={showAutumnBlockOpening}>
+                  {autumnBlocks > 0 ? "Open a Lucky Block" : "Roll or buy a block first"}
+                </button>
+                {pendingAutumnRewards.length > 0 && (
+                  <button className={styles.pendingRewardButton} disabled={ownedTotal >= maxCharacterSlots} onClick={claimPendingAutumnRewards}>
+                    Claim waiting rewards ×{pendingAutumnRewards.length}
+                  </button>
+                )}
+              </div>
+            </article>
+
+            <article className={styles.autumnBlockMarket}>
+              <div>
+                <p className={styles.eyebrow}>Harvest Market</p>
+                <h2>Limited Stock</h2>
+                <span>Restocks in <strong>{autumnRestockClock}</strong></span>
+              </div>
+              <div className={styles.stockBlocks} aria-label={`${autumnShopStock} blocks in stock`}>
+                {Array.from({ length: 5 }, (_, index) => <i key={index} data-stocked={index < autumnShopStock}>?</i>)}
+              </div>
+              <button disabled={autumnShopStock < 1 || cash < AUTUMN_BLOCK_PRICE} onClick={buyAutumnBlock}>
+                {autumnShopStock < 1 ? "Sold out" : `Buy · $${formatCash(AUTUMN_BLOCK_PRICE)}`}
+              </button>
+              <small>{autumnShopStock}/5 remaining · New stock is randomly 3–5</small>
+            </article>
+
+            <div className={styles.autumnOddsStrip}>
+              {autumnOddlings.map((oddling) => (
+                <div key={oddling.id} data-rarity={oddling.rarity}>
+                  <Image src={oddling.image} alt="" width={72} height={72} />
+                  <span><strong>{oddling.name}</strong><small>{oddling.weight}% · ${formatCash(oddling.income)}/sec</small></span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {(activeTab === "shop" || activeTab === "more") && (
-        <section className={styles.progressionHub} data-tab={activeTab} aria-label="Meme RNG progression">
+        <section className={styles.progressionHub} data-tab={activeTab} aria-label="Roll a Meme progression">
           <article className={styles.hubCard}>
             <div className={styles.hubHeading}><span>◎</span><div><p>Objectives</p><h3>Quests</h3></div></div>
             <div className={styles.questList}>
@@ -2205,6 +2445,61 @@ export default function RngMachine() {
             <div>{Array.from({ length: 7 }, (_, index) => <span key={index} data-reached={dailyStreak > index}><b>Day {index + 1}</b><small>{index === 6 ? "Mutation" : `$${formatCash((index + 1) * 50_000)}`}</small></span>)}</div>
           </article>
         </section>
+        )}
+
+        {showAutumnOpening && (
+          <div className={styles.autumnOpeningOverlay} role="dialog" aria-modal="true" aria-label="Open Autumn Lucky Block">
+            <div className={styles.fallingLeaves} aria-hidden="true">
+              {Array.from({ length: 14 }, (_, index) => <i key={index}>🍂</i>)}
+            </div>
+            <div className={styles.autumnOpeningStage} data-phase={autumnOpeningPhase}>
+              <button
+                className={styles.closeAutumnOpening}
+                disabled={autumnOpeningPhase === "shuffling"}
+                onClick={() => setShowAutumnOpening(false)}
+                aria-label="Close Lucky Block opening"
+              >×</button>
+              <div className={styles.autumnOpeningHeading}>
+                <span>Limited Autumn Update</span>
+                <h2>{autumnOpeningPhase === "revealed" ? "You found…" : "Autumn Lucky Block"}</h2>
+              </div>
+
+              <div className={styles.questionBurst} aria-hidden="true">
+                {Array.from({ length: 9 }, (_, index) => <b key={index}>?</b>)}
+              </div>
+
+              <div className={styles.silhouetteChamber}>
+                {autumnOpeningPhase === "revealed" && autumnReveal ? (
+                  <Image className={styles.autumnWinnerImage} src={autumnReveal.image} alt={autumnReveal.name} width={390} height={390} priority />
+                ) : autumnOpeningPhase === "shuffling" ? (
+                  <div
+                    className={styles.autumnSilhouette}
+                    style={{
+                      "--silhouette-image": `url(${autumnShuffleOddling.image})`,
+                      "--silhouette-colour": autumnRevealColours[autumnShuffleIndex],
+                    } as React.CSSProperties}
+                    aria-label="Mystery character silhouette"
+                  />
+                ) : (
+                  <Image className={styles.openingBlockImage} src={autumnLuckyBlock.image} alt="Autumn Lucky Block" width={340} height={340} priority />
+                )}
+              </div>
+
+              <div className={styles.harvestPedestal}><i /><strong>{autumnOpeningPhase === "shuffling" ? "Choosing your character…" : "Harvest Pedestal"}</strong></div>
+
+              {autumnOpeningPhase === "ready" && (
+                <button className={styles.crackBlockButton} onClick={beginAutumnBlockOpening}>Click to open</button>
+              )}
+              {autumnOpeningPhase === "revealed" && autumnReveal && (
+                <div className={styles.autumnWinnerCopy} data-rarity={autumnReveal.rarity}>
+                  <strong>{autumnReveal.name}</strong>
+                  <span>{autumnReveal.rarity} · {autumnReveal.weight}% chance</span>
+                  <b>+${formatCash(autumnReveal.income)}/sec</b>
+                  <button onClick={() => setShowAutumnOpening(false)}>Continue</button>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {showIndex && (
