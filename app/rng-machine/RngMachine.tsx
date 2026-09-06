@@ -87,7 +87,7 @@ const GAME_TABS: readonly [GameTab, string, string][] = [
   ["roll", "🎰", "Roll"],
   ["collection", "🃏", "Collection"],
   ["upgrades", "⬆", "Upgrades"],
-  ["shop", "🧪", "Potions"],
+  ["shop", "🧪", "Store"],
   ["fuse", "🧬", "Fuse"],
   ["rebirth", "♻", "Rebirth"],
   ["more", "⭐", "More"],
@@ -171,7 +171,7 @@ const tutorialSteps = [
     icon: "🍁",
     title: "Autumn Lucky Blocks",
     body: "Every normal spin has a 5% chance to land an Autumn Lucky Block. It goes straight into your separate block storage, so it never takes a character slot.",
-    tip: "The Potions tab has your storage, a five-minute shop restock and the harvest pedestal opening.",
+    tip: "The Store tab has your potions, storage, a five-minute shop restock and the harvest pedestal opening.",
   },
   {
     icon: "⏱",
@@ -717,7 +717,6 @@ export default function RngMachine() {
   const [bonusChoices, setBonusChoices] = useState<RolledOddling[] | null>(null);
   const [showIndex, setShowIndex] = useState(false);
   const [luckFeverUntil, setLuckFeverUntil] = useState(0);
-  const [feverPreviewUsed, setFeverPreviewUsed] = useState(false);
   const [luck, setLuck] = useState(1);
   const [message, setMessage] = useState("Machine ready");
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -828,7 +827,6 @@ export default function RngMachine() {
             savedAt?: number;
             incomePerSecond?: number;
             luckFeverUntil?: number;
-            feverPreviewUsed?: boolean;
             tutorialComplete?: boolean;
             autumnBlocks?: number;
             autumnShopStock?: number;
@@ -865,7 +863,6 @@ export default function RngMachine() {
           if (typeof parsed.doubleIncomeUntil === "number") setDoubleIncomeUntil(parsed.doubleIncomeUntil);
           if (typeof parsed.bossTickets === "number") setBossTickets(parsed.bossTickets);
           if (typeof parsed.luckFeverUntil === "number") setLuckFeverUntil(parsed.luckFeverUntil);
-          if (typeof parsed.feverPreviewUsed === "boolean") setFeverPreviewUsed(parsed.feverPreviewUsed);
           if (typeof parsed.tutorialComplete === "boolean") setTutorialComplete(parsed.tutorialComplete);
           if (typeof parsed.autumnBlocks === "number") setAutumnBlocks(parsed.autumnBlocks);
           if (Array.isArray(parsed.pendingAutumnRewards)) setPendingAutumnRewards(parsed.pendingAutumnRewards);
@@ -910,14 +907,14 @@ export default function RngMachine() {
         cash, owned, upgrades, rebirths, characterLevels, pity, stats,
         claimedQuests, lastDailyClaim, dailyStreak, mutationGuarantees,
         potions, activePotionRolls, doubleIncomeUntil, bossTickets,
-        luckFeverUntil, feverPreviewUsed, tutorialComplete,
+        luckFeverUntil, tutorialComplete,
         autumnBlocks, autumnShopStock, autumnRestockAt, pendingAutumnRewards,
         savedAt: Date.now(), incomePerSecond,
       }),
     );
   }, [activePotionRolls, bossTickets, cash, characterLevels, claimedQuests,
     dailyStreak, doubleIncomeUntil, hasLoaded, incomePerSecond, lastDailyClaim,
-    feverPreviewUsed, luckFeverUntil, mutationGuarantees, owned, pity, potions,
+    luckFeverUntil, mutationGuarantees, owned, pity, potions,
     rebirths, stats, tutorialComplete, upgrades, autumnBlocks, autumnShopStock,
     autumnRestockAt, pendingAutumnRewards]);
 
@@ -1169,10 +1166,9 @@ export default function RngMachine() {
     }
   }
 
-  function startLuckFever(preview = false) {
+  function startLuckFever() {
     const endsAt = currentTimestamp() + 30_000;
     setLuckFeverUntil(endsAt);
-    if (preview) setFeverPreviewUsed(true);
     setMessage("MEME STORM! 50× luck active for 30 seconds!");
     [392, 523, 659, 784, 1_047].forEach((pitch, index) =>
       playTone(pitch, 0.5, 0.045, "triangle", index * 0.08),
@@ -1674,9 +1670,7 @@ export default function RngMachine() {
 
   function enterGame() {
     if (soundEnabledRef.current) startAudioEngine();
-    if (tutorialComplete) {
-      if (!feverPreviewUsed) startLuckFever(true);
-    } else {
+    if (!tutorialComplete) {
       setTutorialStep(0);
       setShowTutorial(true);
     }
@@ -1692,7 +1686,6 @@ export default function RngMachine() {
     setShowTutorial(false);
     setTutorialStep(0);
     setMessage("Tutorial complete — machine ready!");
-    if (!feverPreviewUsed) startLuckFever(true);
   }
 
   function advanceTutorial() {
@@ -1750,7 +1743,6 @@ export default function RngMachine() {
     setDoubleIncomeUntil(0);
     setBossTickets(0);
     setLuckFeverUntil(0);
-    setFeverPreviewUsed(false);
     setTutorialComplete(false);
     setTutorialStep(0);
     setShowTutorial(true);
@@ -1983,7 +1975,6 @@ export default function RngMachine() {
           <div className={styles.eventChip} data-active={weekendEventActive}>
             <span>{weekendEventActive ? "✦ Weekend Warp LIVE" : "Next event: Weekend Warp"}</span>
             <small>{weekendEventActive ? "+10% income · +1% luck" : "Every Saturday and Sunday"}</small>
-            {!feverPreviewUsed && <button onClick={() => startLuckFever(true)}>Test 50× now</button>}
           </div>
           <div className={styles.pityMeter}>
             <span>Pity power {pity}/{PITY_MAX}</span>

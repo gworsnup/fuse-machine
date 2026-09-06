@@ -3059,3 +3059,38 @@
   .rebirthTab .rebirthRequirements img { width: 42px; height: 42px; }
   .rebirthTab .rebirthWarning { margin: 5px 0; font-size: .48rem; }
 }
+
+/* Bouncy arcade typography: round display lettering with compact readable stats. */
+.page {
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "Comic Sans MS", ui-rounded, "Trebuchet MS", sans-serif;
+  letter-spacing: .012em;
+}
+.header h1,
+.introTitle,
+.screen h2,
+.collectionHeading h2,
+.hubHeading h3,
+.rebirthTabHero h2,
+.autumnBlockStorage h2,
+.autumnBlockMarket h2,
+.autumnOpeningHeading h2 {
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "Comic Sans MS", ui-rounded, sans-serif;
+  font-weight: 1000;
+}
+.gameTabs button {
+  letter-spacing: .025em;
+  text-shadow: 0 1px 0 rgba(255,255,255,.72);
+  text-transform: none;
+}
+.gameTabs button[data-active="true"] {
+  transform: translateY(-1px) rotate(-.35deg);
+  text-shadow: 0 1px 0 rgba(255,249,202,.8);
+}
+.rollButton span,
+.playButton,
+.openBlockButton,
+.crackBlockButton,
+.rebirthButton {
+  letter-spacing: .035em;
+  text-transform: none;
+}

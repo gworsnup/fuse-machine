@@ -12,7 +12,7 @@ body {
   min-height: 100%;
   margin: 0;
   background: #66cfff;
-  font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "Comic Sans MS", ui-rounded, "Trebuchet MS", sans-serif;
 }
 
 button,
