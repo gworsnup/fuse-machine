@@ -1,6 +1,6 @@
 :root {
-  color-scheme: dark;
-  background: #0a0436;
+  color-scheme: light;
+  background: #66cfff;
 }
 
 * {
@@ -11,7 +11,7 @@ html,
 body {
   min-height: 100%;
   margin: 0;
-  background: #0a0436;
+  background: #66cfff;
   font-family: ui-rounded, "SF Pro Rounded", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
 }
 
