@@ -325,6 +325,7 @@
 .fuseReveal strong { color: #d3c7df; font-size: 0.7rem; }
 .fuseReveal small { margin-top: 7px; color: #766e80; font-size: 0.58rem; }
 .fuseReveal[data-rarity="OG"] h2 { color: #ffe477; text-shadow: 0 0 18px rgba(255, 215, 91, 0.38); }
+.fuseReveal[data-rarity="Admin"] h2 { color: #69ff82; text-shadow: 0 0 18px rgba(52, 255, 92, 0.55); }
 .fuseAction { width: calc(100% - 32px); min-height: 64px; margin: 0 16px 16px; border: 0; border-radius: 14px; background: linear-gradient(100deg, #72f4d5, #6cd6f4 43%, #b375ff); color: #0d2028; cursor: pointer; font: 950 0.9rem/1 inherit; letter-spacing: 0.09em; text-transform: uppercase; box-shadow: 0 7px 0 #285c72, 0 14px 28px rgba(34, 186, 194, 0.17); }
 .fuseAction:disabled { filter: grayscale(0.85); opacity: 0.38; cursor: default; box-shadow: none; }
 .fuseOddsPanel { max-height: 650px; overflow: auto; padding: 18px; border: 1px solid rgba(172, 144, 225, 0.35); border-radius: 21px; background: rgba(18, 16, 35, 0.84); }
@@ -333,6 +334,7 @@
 .fusionOddsList > div { display: grid; grid-template-columns: 49px 1fr auto; align-items: center; gap: 8px; padding: 7px; border: 1px solid #373042; border-radius: 10px; background: rgba(10, 11, 20, 0.72); }
 .fusionOddsList > div[data-rarity="Secret"] { border-color: rgba(197, 204, 213, 0.32); }
 .fusionOddsList > div[data-rarity="OG"] { border-color: rgba(255, 216, 91, 0.58); box-shadow: inset 0 0 18px rgba(255, 213, 75, 0.06); }
+.fusionOddsList > div[data-rarity="Admin"] { border-color: rgba(74, 255, 108, 0.7); background: linear-gradient(135deg, #020603, #07190b); box-shadow: inset 0 0 20px rgba(52, 255, 92, 0.1); }
 .fusionOddsList img { width: 49px; height: 49px; object-fit: contain; }
 .fusionOddsList > div > span { display: grid; min-width: 0; }
 .fusionOddsList span strong { overflow: hidden; font-size: 0.67rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -348,6 +350,7 @@
 .fuseStorage article { display: grid; grid-template-columns: 58px 1fr auto; align-items: center; gap: 8px; min-width: 0; padding: 8px; border: 1px solid #35414a; border-radius: 11px; background: rgba(11, 15, 23, 0.76); }
 .fuseStorage article[data-rarity="Secret"] { border-color: rgba(191, 198, 205, 0.35); }
 .fuseStorage article[data-rarity="OG"] { border-color: rgba(255, 215, 84, 0.55); }
+.fuseStorage article[data-rarity="Admin"] { border-color: rgba(68, 255, 105, 0.68); background: linear-gradient(135deg, #020503, #081b0c); }
 .fuseStorage img { width: 58px; height: 58px; object-fit: contain; }
 .fuseStorage article > span { display: grid; min-width: 0; }
 .fuseStorage article strong { overflow: hidden; font-size: 0.66rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -685,6 +688,7 @@
 }
 .rollReveal[data-rarity="Secret"] strong { color: #e1e1e5; text-shadow: 0 0 8px #fff; }
 .rollReveal[data-rarity="OG"] strong { color: #fff0a8; text-shadow: 0 0 13px rgba(255, 214, 74, 0.65); }
+.rollReveal[data-rarity="Admin"] strong { color: #66ff83; text-shadow: 0 0 6px #071109, 0 0 16px rgba(46, 255, 87, 0.85); }
 
 .reelTrack {
   position: absolute;
@@ -748,6 +752,14 @@
 .reelCard[data-rarity="Godly"] { border-color: rgba(112, 235, 255, 0.62); color: #8df6ff; }
 .reelCard[data-rarity="Secret"] { border-color: #a8a8aa; color: #d6d6da; background: linear-gradient(160deg, #252525, #030303); }
 .reelCard[data-rarity="OG"] { border-color: #ffe486; color: #fff0b5; box-shadow: inset 0 0 22px rgba(255, 217, 86, 0.13); }
+.reelCard[data-rarity="Admin"] {
+  border-color: #48ff69;
+  background:
+    repeating-linear-gradient(0deg, rgba(66, 255, 102, 0.055) 0 1px, transparent 1px 7px),
+    linear-gradient(160deg, #071109, #010302);
+  color: #68ff84;
+  box-shadow: inset 0 0 25px rgba(47, 255, 87, 0.16), 0 0 12px rgba(47, 255, 87, 0.18);
+}
 
 .reelCard[data-rarity="Luck"] {
   border-color: var(--luck-border, #77ff96);
@@ -949,6 +961,14 @@
   background-clip: text;
   text-shadow: 0 0 18px rgba(255, 211, 76, 0.34);
 }
+.rarity[data-rarity="Admin"] {
+  background: linear-gradient(90deg, #020603, #5dff78 25%, #b3ffc0 48%, #1cff4a 72%, #020603);
+  background-size: 220% 100%;
+  color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 7px rgba(47, 255, 84, 0.72));
+  animation: adminScan 1.5s linear infinite;
+}
 
 .screen h2 { margin: 0; font-size: clamp(1.9rem, 7vw, 2.8rem); letter-spacing: -0.045em; }
 .screen[data-character-rarity="Legendary"] h2 { color: #ffd34d; }
@@ -971,6 +991,14 @@
   color: transparent;
   background-clip: text;
   filter: drop-shadow(0 0 9px rgba(255, 220, 106, 0.5));
+}
+.screen[data-character-rarity="Admin"] h2 {
+  background: linear-gradient(90deg, #071109, #54ff72, #c5ffcd, #20ff48, #071109);
+  background-size: 240% 100%;
+  color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 9px rgba(40, 255, 79, 0.7));
+  animation: adminScan 1.4s linear infinite;
 }
 .description { max-width: 390px; min-height: 36px; margin: 6px 0 22px; color: #8d8598; font-size: 0.82rem; }
 
@@ -1090,6 +1118,11 @@
 .collectionCard[data-rarity="Godly"] { border-color: rgba(112, 235, 255, 0.45); }
 .collectionCard[data-rarity="Secret"] { border-color: rgba(219, 225, 232, 0.46); background: linear-gradient(135deg, #090909, #201f23); }
 .collectionCard[data-rarity="OG"] { border-color: #f6cf5c; box-shadow: inset 0 0 22px rgba(255, 203, 60, 0.08); }
+.collectionCard[data-rarity="Admin"] {
+  border-color: #42ff67;
+  background: repeating-linear-gradient(0deg, rgba(61, 255, 98, 0.045) 0 1px, transparent 1px 7px), linear-gradient(135deg, #020503, #0a1c0d);
+  box-shadow: inset 0 0 24px rgba(44, 255, 85, 0.12);
+}
 .collectionCard[data-mutation="gold"] { background: linear-gradient(135deg, #211c0d, #111016); }
 .collectionCard[data-mutation="diamond"] { background: linear-gradient(135deg, #0a1e25, #111016); }
 .collectionCard[data-mutation="rainbow"] { background: linear-gradient(135deg, #23102a, #0c1725); }
@@ -1338,6 +1371,22 @@
 .indexGrid img { width: 92px; height: 92px; object-fit: contain; }
 .indexGrid strong { font-size: 0.66rem; }
 .indexGrid small { margin-top: 3px; color: #867b91; font-size: 0.52rem; text-transform: uppercase; }
+.indexGrid article[data-discovered="false"] small {
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  font-weight: 950;
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+.indexGrid article[data-discovered="false"][data-rarity="Common"] small { color: #b8f5d0; }
+.indexGrid article[data-discovered="false"][data-rarity="Legendary"] small { color: #ffd34d; }
+.indexGrid article[data-discovered="false"][data-rarity="Mythic"] small { color: #ff536b; }
+.indexGrid article[data-discovered="false"][data-rarity="Godly"] small { color: #77efff; }
+.indexGrid article[data-discovered="false"][data-rarity="Secret"] small { color: #e4e4e7; }
+.indexGrid article[data-discovered="false"][data-rarity="OG"] small { color: #ffe278; }
+.indexGrid article[data-discovered="false"][data-rarity="Admin"] small { color: #5cff79; box-shadow: 0 0 10px rgba(49, 255, 88, 0.28); }
 .indexGrid article > div { display: flex; gap: 3px; margin-top: 7px; }
 .indexGrid i { display: grid; width: 19px; height: 19px; place-items: center; border: 1px solid #3b3345; border-radius: 50%; color: #5c5365; font: 800 0.48rem/1 monospace; }
 .indexGrid i[data-found="true"] { border-color: #67e8c3; background: #67e8c3; color: #09241c; box-shadow: 0 0 9px rgba(79, 237, 190, 0.34); }
@@ -1364,6 +1413,7 @@
 @keyframes flicker { to { opacity: 0.55; transform: translateY(2px); } }
 @keyframes boost { from { transform: scale(0.55); } 70% { transform: scale(1.18); } }
 @keyframes rainbowShift { to { background-position: 300% 0; } }
+@keyframes adminScan { to { background-position: 220% 0; } }
 @keyframes mutationIntro {
   0% { opacity: 0; transform: scale(0.86); }
   22%, 72% { opacity: 1; transform: scale(1); }
@@ -1791,7 +1841,9 @@
   .statusLight[data-active="true"],
   .luckTrack span[data-reached="true"],
   .rarity[data-rarity="Godly"],
-  .screen[data-character-rarity="Godly"] h2 { animation-duration: 1ms; }
+  .rarity[data-rarity="Admin"],
+  .screen[data-character-rarity="Godly"] h2,
+  .screen[data-character-rarity="Admin"] h2 { animation-duration: 1ms; }
   .rollReveal { animation-duration: 1ms; }
   .mutationIntro,
   .reelCard[data-mutation="rainbow"] img,

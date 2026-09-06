@@ -11,7 +11,8 @@ type Rarity =
   | "Mythic"
   | "Godly"
   | "Secret"
-  | "OG";
+  | "OG"
+  | "Admin";
 
 type Oddling = {
   id: string;
@@ -200,7 +201,7 @@ const oddlings: Oddling[] = [
   { id: "trollini-gamerini", name: "Fairs Meme", image: "/characters/fairs-cutout.png", description: "The masked OK-sign legend who always knows when the roll is fair.", rarity: "Legendary", price: 10_000, income: 1_000, weight: 64 },
   { id: "excuse-me-sir", name: "Excuse Me Sir", image: "/characters/excuse-me-sir-cutout.png", description: "That politely smug look when the reel knows it has your attention.", rarity: "Legendary", price: 11_000, income: 1_100, weight: 60 },
   { id: "oliver", name: "Oliver", image: "/characters/oliver-cutout.png", description: "The bowl-cut icon whose legendary waterproof fit never misses.", rarity: "Legendary", price: 13_000, income: 1_300, weight: 58 },
-  { id: "le-godly-developer-chester", name: "Le Godly Developer Chester", image: "/characters/le-godly-developer-chester.jpeg", description: "The tiny coding mastermind whose next update is always legendary.", rarity: "Legendary", price: 30_000, income: 3_000, weight: 52 },
+  { id: "le-godly-developer-chester", name: "Le Godly Developer Chester", image: "/characters/le-godly-developer-chester.jpeg", description: "The tiny hacker mastermind with admin access to the entire Memeverse.", rarity: "Admin", price: 25_000_000_000, income: 1_000_000_000, weight: 0.00005 },
   { id: "snoozi-mozzi", name: "Verity", image: "/characters/verity-reference.webp", description: "A simple yellow smiley with unstoppable positive energy.", rarity: "Legendary", price: 50_000, income: 5_000, weight: 42 },
 
   { id: "lava-llama", name: "67", image: "/characters/sixty-seven-cutout.png", description: "The glowing, wide-mouthed sixty-seven energy meme in its final form.", rarity: "Mythic", price: 180_000, income: 15_000, weight: 16 },
@@ -275,6 +276,7 @@ const rarityRank: Record<Rarity, number> = {
   Godly: 3,
   Secret: 4,
   OG: 5,
+  Admin: 6,
 };
 
 function formatCash(value: number) {
@@ -353,7 +355,8 @@ function pickOddling(luck: number, pity = 0, bossRoll = false) {
     const highTierSecretsAndOgs = oddlings.filter(
       (oddling) =>
         (oddling.rarity === "Secret" && oddling.income >= 15_000_000) ||
-        oddling.rarity === "OG",
+        oddling.rarity === "OG" ||
+        oddling.rarity === "Admin",
     );
     const highTierChance = bossRoll
       ? 1
@@ -373,6 +376,7 @@ function pickOddling(luck: number, pity = 0, bossRoll = false) {
       "void-emperor": 6,
       "star-eater": 2,
       "heavenly-dragon": 0.04,
+      "le-godly-developer-chester": 0.004,
     };
     const total = pool.reduce(
       (sum, oddling) => sum + boostedWeights[oddling.id],
@@ -392,8 +396,10 @@ function pickOddling(luck: number, pity = 0, bossRoll = false) {
     oddling,
     adjustedWeight:
       oddling.weight *
-      (oddling.rarity === "OG"
-        ? 1 + pity * 0.12
+      (oddling.rarity === "Admin"
+        ? 1 + pity * 0.15
+        : oddling.rarity === "OG"
+          ? 1 + pity * 0.12
         : oddling.rarity === "Secret"
           ? 1 + pity * 0.06
           : 1),
@@ -411,11 +417,11 @@ function pickOddling(luck: number, pity = 0, bossRoll = false) {
 
 function oddlingChanceAtLuck(oddling: Oddling, luck: number, pity = 0, bossRoll = false) {
   if (luck >= 2) {
-    if (oddling.rarity !== "Secret" && oddling.rarity !== "OG") return 0;
-    const isHighTier = oddling.rarity === "OG" || oddling.income >= 15_000_000;
+    if (oddling.rarity !== "Secret" && oddling.rarity !== "OG" && oddling.rarity !== "Admin") return 0;
+    const isHighTier = oddling.rarity === "OG" || oddling.rarity === "Admin" || oddling.income >= 15_000_000;
     const pool = oddlings.filter((entry) =>
       isHighTier
-        ? (entry.rarity === "Secret" && entry.income >= 15_000_000) || entry.rarity === "OG"
+        ? (entry.rarity === "Secret" && entry.income >= 15_000_000) || entry.rarity === "OG" || entry.rarity === "Admin"
         : entry.rarity === "Secret" && entry.income <= 5_000_000,
     );
     const weights: Record<string, number> = {
@@ -424,6 +430,7 @@ function oddlingChanceAtLuck(oddling: Oddling, luck: number, pity = 0, bossRoll 
       "shadow-sphinx": 25, "chrome-phantom": 12, "void-emperor": 6,
       "star-eater": 2,
       "heavenly-dragon": 0.04,
+      "le-godly-developer-chester": 0.004,
     };
     const tierChance = bossRoll
       ? 1
@@ -436,8 +443,10 @@ function oddlingChanceAtLuck(oddling: Oddling, luck: number, pity = 0, bossRoll 
   }
 
   const adjustedWeight = (entry: Oddling) => entry.weight *
-    (entry.rarity === "OG"
-      ? 1 + pity * 0.12
+    (entry.rarity === "Admin"
+      ? 1 + pity * 0.15
+      : entry.rarity === "OG"
+        ? 1 + pity * 0.12
       : entry.rarity === "Secret"
         ? 1 + pity * 0.06
         : 1);
@@ -496,10 +505,10 @@ type FusionOutcome = { oddling: Oddling; chance: number };
 
 function getFusionOdds(inputs: OwnedOddling[]): FusionOutcome[] {
   if (inputs.length !== 4) return [];
-  const allSecretOrHigher = inputs.every((entry) => entry.rarity === "Secret" || entry.rarity === "OG");
+  const allSecretOrHigher = inputs.every((entry) => entry.rarity === "Secret" || entry.rarity === "OG" || entry.rarity === "Admin");
 
   if (!allSecretOrHigher) {
-    const rarityValue: Record<Rarity, number> = { Common: 0, Legendary: 1, Mythic: 2, Godly: 3, Secret: 4, OG: 5 };
+    const rarityValue: Record<Rarity, number> = { Common: 0, Legendary: 1, Mythic: 2, Godly: 3, Secret: 4, OG: 5, Admin: 6 };
     const averageQuality = inputs.reduce((sum, entry) => sum + rarityValue[entry.rarity], 0) / 4;
     const godlyChance = Math.min(80, 8 + averageQuality * 15);
     const mythicChance = 100 - godlyChance;
@@ -1190,7 +1199,7 @@ export default function RngMachine() {
             setResultSecondsLeft(60);
             setResultDeadline(Date.now() + 60_000);
             setIsRolling(false);
-            setPity(phaseWinner.rarity === "Secret" || phaseWinner.rarity === "OG"
+            setPity(phaseWinner.rarity === "Secret" || phaseWinner.rarity === "OG" || phaseWinner.rarity === "Admin"
               ? 0
               : (current) => Math.min(PITY_MAX, current + 1));
             setStats((current) => ({
@@ -1768,7 +1777,7 @@ export default function RngMachine() {
           <div className={styles.pityMeter}>
             <span>Pity power {pity}/{PITY_MAX}</span>
             <i><b style={{ width: `${pity / PITY_MAX * 100}%` }} /></i>
-            <small>Builds until a Secret or OG lands</small>
+            <small>Builds until a Secret, OG or Admin lands</small>
           </div>
           <button className={styles.dailyButton} disabled={!currentDayKey || lastDailyClaim === currentDayKey} onClick={claimDailyReward}>
             {lastDailyClaim === currentDayKey ? "Daily claimed" : `Claim day ${dailyStreak >= 7 ? 1 : dailyStreak + 1}`}
