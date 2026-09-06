@@ -675,6 +675,7 @@
   filter: drop-shadow(0 12px 17px rgba(0, 0, 0, 0.7));
 }
 
+.rollReveal[data-rarity="Common"] strong { color: #b8f5d0; }
 .rollReveal[data-rarity="Legendary"] strong { color: #ffd34d; }
 .rollReveal[data-rarity="Mythic"] strong { color: #ff334f; }
 .rollReveal[data-rarity="Godly"] strong {
@@ -741,6 +742,7 @@
   line-height: 1;
   text-shadow: 0 0 8px rgba(75, 255, 143, 0.35);
 }
+.reelCard[data-rarity="Common"] { border-color: rgba(165, 231, 193, 0.42); color: #b8f5d0; }
 .reelCard[data-rarity="Legendary"] { border-color: rgba(255, 211, 77, 0.48); color: #ffd34d; }
 .reelCard[data-rarity="Mythic"] { border-color: rgba(255, 51, 79, 0.55); color: #ff334f; }
 .reelCard[data-rarity="Godly"] { border-color: rgba(112, 235, 255, 0.62); color: #8df6ff; }
@@ -925,6 +927,7 @@
   text-transform: uppercase;
 }
 
+.rarity[data-rarity="Common"] { color: #b8f5d0; text-shadow: 0 0 12px rgba(127, 239, 174, 0.3); }
 .rarity[data-rarity="Legendary"] { color: #ffd34d; text-shadow: 0 0 12px rgba(255, 197, 45, 0.38); }
 .rarity[data-rarity="Mythic"] { color: #ff334f; text-shadow: 0 0 13px rgba(255, 35, 70, 0.5); }
 .rarity[data-rarity="Godly"] {
@@ -1081,6 +1084,7 @@
   white-space: nowrap;
 }
 .collectionActions button:hover { border-color: #a984ff; color: #d8c9ff; }
+.collectionCard[data-rarity="Common"] { border-color: rgba(165, 231, 193, 0.3); }
 .collectionCard[data-rarity="Legendary"] { border-color: rgba(255, 211, 77, 0.35); }
 .collectionCard[data-rarity="Mythic"] { border-color: rgba(255, 51, 79, 0.4); }
 .collectionCard[data-rarity="Godly"] { border-color: rgba(112, 235, 255, 0.45); }

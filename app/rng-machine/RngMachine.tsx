@@ -6,6 +6,7 @@ import Image from "next/image";
 import styles from "./rng-machine.module.css";
 
 type Rarity =
+  | "Common"
   | "Legendary"
   | "Mythic"
   | "Godly"
@@ -131,6 +132,7 @@ const luckTokens: Record<number, LuckToken> = {
 };
 
 const oddlings: Oddling[] = [
+  { id: "eye-of-rah", name: "Eye of Rah", image: "/characters/eye-of-rah.png", description: "The all-seeing third eye watches every spin before it lands.", rarity: "Common", price: 3_500, income: 350, weight: 110 },
   { id: "trollini-gamerini", name: "Fairs Meme", image: "/characters/fairs-cutout.png", description: "The masked OK-sign legend who always knows when the roll is fair.", rarity: "Legendary", price: 10_000, income: 1_000, weight: 64 },
   { id: "excuse-me-sir", name: "Excuse Me Sir", image: "/characters/excuse-me-sir-cutout.png", description: "That politely smug look when the reel knows it has your attention.", rarity: "Legendary", price: 11_000, income: 1_100, weight: 60 },
   { id: "oliver", name: "Oliver", image: "/characters/oliver-cutout.png", description: "The bowl-cut icon whose legendary waterproof fit never misses.", rarity: "Legendary", price: 13_000, income: 1_300, weight: 58 },
@@ -203,11 +205,12 @@ const characterPerformances: Record<string, CharacterPerformance> = {
 };
 
 const rarityRank: Record<Rarity, number> = {
-  Legendary: 0,
-  Mythic: 1,
-  Godly: 2,
-  Secret: 3,
-  OG: 4,
+  Common: 0,
+  Legendary: 1,
+  Mythic: 2,
+  Godly: 3,
+  Secret: 4,
+  OG: 5,
 };
 
 function formatCash(value: number) {
@@ -432,7 +435,7 @@ function getFusionOdds(inputs: OwnedOddling[]): FusionOutcome[] {
   const allSecretOrHigher = inputs.every((entry) => entry.rarity === "Secret" || entry.rarity === "OG");
 
   if (!allSecretOrHigher) {
-    const rarityValue: Record<Rarity, number> = { Legendary: 0, Mythic: 1, Godly: 2, Secret: 3, OG: 4 };
+    const rarityValue: Record<Rarity, number> = { Common: 0, Legendary: 1, Mythic: 2, Godly: 3, Secret: 4, OG: 5 };
     const averageQuality = inputs.reduce((sum, entry) => sum + rarityValue[entry.rarity], 0) / 4;
     const godlyChance = Math.min(80, 8 + averageQuality * 15);
     const mythicChance = 100 - godlyChance;
